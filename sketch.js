@@ -122,9 +122,9 @@ function updateScore() {
 function fallCheck() {
   if (runner.position.y > height) {
     gameOver = true;
+    gameMusic.stop();
+    gameOverMusic.play();
   }
-  gameMusic.stop();
-  gameOverMusic.play();
 }
 
 function gameOverText() {
@@ -212,6 +212,7 @@ function jumpDetection() {
     runner.changeAnimation("jump");
     runner.animation.rewind();
     runner.velocity.y = -jumpPower;
+    jumpSound.play();
   }
 }
 
