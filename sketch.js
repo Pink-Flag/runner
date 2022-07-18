@@ -107,6 +107,7 @@ function draw() {
 function updateScore() {
   if (frameCount % 60 === 0) {
     playerScore++;
+    increaseRunnerSpeed()
   }
 
   fill("white");
@@ -116,6 +117,10 @@ function updateScore() {
   textSize(20);
   textAlign(CENTER);
   text(playerScore, camera.position.x + 350, camera.position.y + 160);
+}
+
+function increaseRunnerSpeed() {
+  runnerSpeed += 0.2;
 }
 
 function fallCheck() {
