@@ -65,6 +65,7 @@ function preload() {
 }
 function setup() {
   createCanvas(width, height);
+  gameMusic.play();
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
@@ -122,6 +123,8 @@ function fallCheck() {
   if (runner.position.y > height) {
     gameOver = true;
   }
+  gameMusic.stop();
+  gameOverMusic.play();
 }
 
 function gameOverText() {
@@ -224,4 +227,6 @@ function newGame() {
   runner.velocity.x = runnerSpeed;
   currentPlatformLocation = -width;
   currentBackgroundTilePosition = -width;
+  gameOverMusic.stop();
+  gameMusic.play();
 }
