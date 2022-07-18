@@ -65,7 +65,7 @@ function preload() {
 }
 function setup() {
   createCanvas(width, height);
-  gameMusic.play();
+  // gameMusic.play();
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
@@ -108,7 +108,6 @@ function updateScore() {
   if (frameCount % 60 === 0) {
     playerScore++;
   }
-  console.log(playerScore);
 
   fill("white");
   textFont(gameFont);
@@ -228,6 +227,6 @@ function newGame() {
   runner.velocity.x = runnerSpeed;
   currentPlatformLocation = -width;
   currentBackgroundTilePosition = -width;
-  gameOverMusic.stop();
-  gameMusic.play();
+  // gameOverMusic.stop();
+  // gameMusic.play();
 }
