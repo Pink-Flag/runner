@@ -202,9 +202,9 @@ function removeOldPlatforms() {
 
 function addNewPlatforms() {
   if (platformsGroup.length < 5) {
-    let currentPlatformLength = 1132;
+    let currentPlatformLength = random(800, 1200);
     let platform = createSprite(
-      currentPlatformLocation * 1.2,
+      currentPlatformLocation * 1.3,
       random(300, 400),
       1132,
       336
