@@ -68,7 +68,9 @@ function preload() {
 }
 function setup() {
   createCanvas(width, height);
-  // gameMusic.play();
+
+    gameMusic.play();
+  
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
@@ -114,6 +116,7 @@ function muteGame() {
     gameMusic.setVolume(1);
   } else {
     gameMusic.setVolume(0);
+    gameOverMusic.setVolume(0);
   }
 }
 
@@ -250,5 +253,7 @@ function newGame() {
   currentPlatformLocation = -width;
   currentBackgroundTilePosition = -width;
   gameOverMusic.stop();
+  if (musicOn) {
   gameMusic.play();
+  }
 }
