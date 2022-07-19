@@ -18,8 +18,11 @@ var backgroundTiles;
 var playerScore = 0;
 const height = 390;
 const width = 840;
-
+let musicOn = true;
 var currentPlatformLocation = -width;
+
+const muteIcon = document.querySelector(".mute");
+muteIcon.addEventListener("click", muteGame);
 
 function preload() {
   jumpingAnimation = loadAnimation(
@@ -65,7 +68,7 @@ function preload() {
 }
 function setup() {
   createCanvas(width, height);
-  gameMusic.play();
+  // gameMusic.play();
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
@@ -104,10 +107,20 @@ function draw() {
   addNewPlatforms();
 }
 
+function muteGame() {
+  musicOn = !musicOn;
+
+  if (musicOn) {
+    gameMusic.setVolume(1);
+  } else {
+    gameMusic.setVolume(0);
+  }
+}
+
 function updateScore() {
   if (frameCount % 60 === 0) {
     playerScore++;
-    increaseRunnerSpeed()
+    increaseRunnerSpeed();
   }
 
   fill("white");
@@ -127,7 +140,9 @@ function fallCheck() {
   if (runner.position.y > height) {
     gameOver = true;
     gameMusic.stop();
-    gameOverMusic.play();
+    if (musicOn) {
+      gameOverMusic.play();
+    }
   }
 }
 
@@ -216,7 +231,9 @@ function jumpDetection() {
     runner.changeAnimation("jump");
     runner.animation.rewind();
     runner.velocity.y = -jumpPower;
-    jumpSound.play();
+    if (musicOn) {
+      jumpSound.play();
+    }
   }
 }
 
