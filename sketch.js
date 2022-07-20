@@ -19,8 +19,10 @@ var playerScore = 0;
 const height = 390;
 const width = 840;
 let musicOn = true;
+
 var currentPlatformLocation = 0;
 var index;
+
 
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
@@ -66,20 +68,57 @@ function preload() {
   jumpSound = loadSound(
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
+
   platform1132 = loadImage("./images/platform1132.png");
   platform537 = loadImage("./images/platform537.png");
+
 }
+
+function createFirstPlatform() {
+  console.log("here")
+  let currentPlatformLength = 1132;
+  let platform = createSprite(
+    currentPlatformLocation * 1.3,
+    random(300, 400),
+    1132,
+    336
+  );
+ 
+  console.log("FirstTime")
+  platform.collide(runner);
+  currentPlatformLocation += currentPlatformLength;
+  platform.addAnimation("default", platformBackground);
+  platform.depth = 3;
+  platformsGroup.add(platform);
+}
+
 function setup() {
   createCanvas(width, height);
+ 
+  platforms = [
+    platform5,
+    platform10,
+    platform15,
+    platform20,
+    platform25,
+    platform30,
+    platform35,
+    platform40,
+  ];
+
+  gameMusic.play();
+
 
   gameMusic.play();
   index = 0;
+
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
   runner.addAnimation("run", runningAnimation);
   runner.setCollider("rectangle", 0, 0, 10, 41);
   platformsGroup = new Group();
+  createFirstPlatform();
   backgroundTiles = new Group();
   currentBackgroundTilePosition = -width;
 }
@@ -87,13 +126,15 @@ function setup() {
 function draw() {
   if (!gameOver) {
     background(200);
+    // console.log(firstPlatform);
 
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
+    
     addNewPlatforms();
     jumpDetection();
-
+   
     camera.position.x = runner.position.x + 300;
     removeOldPlatforms();
     addNewBackgroundTiles();
@@ -106,6 +147,7 @@ function draw() {
     gameOverText();
     updateSprites(false);
     if (keyWentDown("space")) {
+      firstPlatform = true;
       newGame();
     }
   }
@@ -203,7 +245,9 @@ function removeOldPlatforms() {
   }
 }
 
+
 function addNewPlatforms() {
+
   if (platformsGroup.length < 5) {
     if (index % 2 === 0) {
       let currentPlatformLength = 1332;
@@ -226,10 +270,12 @@ function addNewPlatforms() {
         currentPlatformLocation + 200,
         random(300, 400),
         537,
+
         336
       );
       platform.collide(runner);
       currentPlatformLocation += currentPlatformLength;
+
       platform.addAnimation("default", platform537);
       platform.depth = 3;
       platformsGroup.add(platform);
@@ -237,7 +283,9 @@ function addNewPlatforms() {
       index++;
     }
   }
+
 }
+
 
 function solidGround() {
   runner.velocity.y = 0;
@@ -263,6 +311,7 @@ function jumpDetection() {
 }
 
 function newGame() {
+  firstPlatform = true;
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
   index = 0;
