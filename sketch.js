@@ -19,17 +19,10 @@ var playerScore = 0;
 const height = 390;
 const width = 840;
 let musicOn = true;
-var currentPlatformLocation = -width;
-var platform5;
-var platform10;
-var platform15;
-var platform20;
-var platform25;
-var platform30;
-var platform35;
-var platform40;
-var platforms;
-var firstPlatform = true;
+
+var currentPlatformLocation = 0;
+var index;
+
 
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
@@ -76,14 +69,9 @@ function preload() {
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
 
-  platform5 = loadImage("./Images/platform5.png");
-  platform10 = loadImage("./Images/platform10.png");
-  platform15 = loadImage("./Images/platform15.png");
-  platform20 = loadImage("./Images/platform20.png");
-  platform25 = loadImage("./Images/platform25.png");
-  platform30 = loadImage("./Images/platform30.png");
-  platform35 = loadImage("./Images/platform35.png");
-  platform40 = loadImage("./Images/platform40.png");
+  platform1132 = loadImage("./images/platform1132.png");
+  platform537 = loadImage("./images/platform537.png");
+
 }
 
 function createFirstPlatform() {
@@ -119,6 +107,10 @@ function setup() {
   ];
 
   gameMusic.play();
+
+
+  gameMusic.play();
+  index = 0;
 
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
@@ -255,26 +247,42 @@ function removeOldPlatforms() {
 
 
 function addNewPlatforms() {
- 
-    const index = Math.floor(random(0, 7));
-    let randomPlatform = platforms[index];
-    let platformLength = [326, 537, 537, 747, 1167, 1377, 1587, 1797];
 
-    if (platformsGroup.length < 5) {
-      let currentPlatformLength = platformLength[index];
+  if (platformsGroup.length < 5) {
+    if (index % 2 === 0) {
+      let currentPlatformLength = 1332;
       let platform = createSprite(
-        currentPlatformLocation * 1.3,
+        currentPlatformLocation + 500,
         random(300, 400),
-        platformLength[index],
+        1132,
         336
       );
       platform.collide(runner);
       currentPlatformLocation += currentPlatformLength;
-      platform.addAnimation("default", randomPlatform);
+      platform.addAnimation("default", platform1132);
       platform.depth = 3;
       platformsGroup.add(platform);
-      console.log(platformsGroup, "<<<Last")
+
+      index++;
+    } else {
+      let currentPlatformLength = 700;
+      let platform = createSprite(
+        currentPlatformLocation + 200,
+        random(300, 400),
+        537,
+
+        336
+      );
+      platform.collide(runner);
+      currentPlatformLocation += currentPlatformLength;
+
+      platform.addAnimation("default", platform537);
+      platform.depth = 3;
+      platformsGroup.add(platform);
+
+      index++;
     }
+  }
 
 }
 
@@ -306,6 +314,7 @@ function newGame() {
   firstPlatform = true;
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
+  index = 0;
   gameOver = false;
   playerScore = 0;
   updateSprites(true);
@@ -313,7 +322,8 @@ function newGame() {
   runner.position.x = 50;
   runner.position.y = 100;
   runner.velocity.x = runnerSpeed;
-  currentPlatformLocation = -width;
+  console.log(currentPlatformLocation);
+  currentPlatformLocation = 0;
   currentBackgroundTilePosition = -width;
   gameOverMusic.stop();
   if (musicOn) {
