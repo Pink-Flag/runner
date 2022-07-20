@@ -19,6 +19,8 @@ var playerScore = 0;
 const height = 390;
 const width = 840;
 let musicOn = true;
+var switchBool
+var bin
 
 var currentPlatformLocation = 0;
 var index;
@@ -69,14 +71,15 @@ function preload() {
   );
   platform327 = loadImage("./images/platform327.png");
   platform537 = loadImage("./images/platform537.png");
+  platform747 = loadImage("./images/platform747.png");
   platform1132 = loadImage("./images/platform1132.png");
+  platform1587 = loadImage("./images/platform1587.png");
+  transparentBin = loadImage("./images/transparentBin.png");
 }
-
-
 
 function setup() {
   createCanvas(width, height);
-
+switchBool = true;
   gameMusic.play();
 
   gameMusic.play();
@@ -87,6 +90,12 @@ function setup() {
   runner.addAnimation("jump", jumpingAnimation);
   runner.addAnimation("run", runningAnimation);
   runner.setCollider("rectangle", 0, 0, 10, 41);
+
+  bin = createSprite(1000, 120, 10, 10);
+  bin.depth = 5;
+  bin.addAnimation("bin", transparentBin);
+  bin.setCollider("rectangle", 0, 0, 10, 41);
+
   platformsGroup = new Group();
 
   backgroundTiles = new Group();
@@ -98,9 +107,12 @@ function draw() {
     background(200);
 
     runner.velocity.y += gravity;
+    // bin.velocity.y += gravity;
+   
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
-
+    // bin.collide(platformsGroup);
+    
     addNewPlatforms();
     jumpDetection();
 
@@ -122,6 +134,9 @@ function draw() {
   }
   addNewPlatforms();
 }
+
+function isGameOver() {
+  gameOver = !gameOver}
 
 function muteGame() {
   musicOn = !musicOn;
@@ -207,53 +222,40 @@ function removeOldBackgroundTiles() {
 }
 
 function removeOldPlatforms() {
+  console.log("fuck you");
   for (let i = 0; i < platformsGroup.length; i++) {
-    if (platformsGroup[i].position.x < runner.position.x - width) {
+    if (platformsGroup[i].position.x < runner.position.x - 1500) {
       platformsGroup[i].remove();
     }
   }
 }
 
+function randomIndex() {
+  if (switchBool) {
+    switchBool=!switchBool
+    return 4;
+} else {
+  return Math.floor(Math.random(0, 4))
+}
+}
+
+function createBin() {
+  bin = createSprite(currentPlatformLocation, -100, 10, 10);
+  // bin.depth = 5;
+  bin.addAnimation("bin", transparentBin);
+  bin.setCollider("rectangle", 0, 100, 10, 41);
+  bin.velocity.y += gravity;
+  bin.collide(platformsGroup, solidGround);
+  runner.collide(bin, isGameOver);
+}
+
+
 function addNewPlatforms() {
   if (platformsGroup.length < 5) {
-    let i = Math.floor(random(0,2))
-    
-    switch (Math.floor(random(0,2))) {
+    switch (randomIndex()) {
       case 0: {
-        console.log("0")
-        let currentPlatformLength = 1332;
-        let platform = createSprite(
-          currentPlatformLocation + 500,
-          random(300, 400),
-          1132,
-          336
-        );
-        platform.collide(runner);
-        currentPlatformLocation += currentPlatformLength;
-        platform.addAnimation("default", platform1132);
-        platform.depth = 3;
-        platformsGroup.add(platform);
-      }
-      case 1: {
-        console.log("1")
-        let currentPlatformLength = 700;
-        let platform = createSprite(
-          currentPlatformLocation + 200,
-          random(300, 400),
-          537,
-
-          336
-        );
-        platform.collide(runner);
-        currentPlatformLocation += currentPlatformLength;
-
-        platform.addAnimation("default", platform537);
-        platform.depth = 3;
-        platformsGroup.add(platform);
-      }
-      case 2: {
-        console.log(2)
-        let currentPlatformLength = 350;
+        console.log(2);
+        let currentPlatformLength = random(480, 520);
         let platform = createSprite(
           currentPlatformLocation + 50,
           random(300, 400),
@@ -267,6 +269,76 @@ function addNewPlatforms() {
         platform.addAnimation("default", platform327);
         platform.depth = 3;
         platformsGroup.add(platform);
+        createBin()
+        
+      }
+      case 1: {
+        console.log("1");
+        let currentPlatformLength = random(775, 825);
+        let platform = createSprite(
+          currentPlatformLocation + 200,
+          random(300, 400),
+          537,
+
+          336
+        );
+        platform.collide(runner);
+        currentPlatformLocation += currentPlatformLength;
+
+        platform.addAnimation("default", platform537);
+        platform.depth = 3;
+        platformsGroup.add(platform);
+        createBin()
+      }
+      case 2: {
+        console.log(3);
+        let currentPlatformLength = random(950, 1050);
+        let platform = createSprite(
+          currentPlatformLocation + 300,
+          random(300, 400),
+          747,
+          336
+        );
+        platform.collide(runner);
+        currentPlatformLocation += currentPlatformLength;
+
+        platform.addAnimation("default", platform747);
+        platform.depth = 3;
+        platformsGroup.add(platform);
+        createBin()
+      }
+      case 3: {
+        console.log("0");
+        let currentPlatformLength = random(1332, 1382);
+        let platform = createSprite(
+          currentPlatformLocation + 500,
+          random(300, 400),
+          1132,
+          336
+        );
+        platform.collide(runner);
+        currentPlatformLocation += currentPlatformLength;
+        platform.addAnimation("default", platform1132);
+        platform.depth = 3;
+        platformsGroup.add(platform);
+        createBin()
+      }
+      case 4: {
+        console.log(4);
+        let currentPlatformLength = 1900;
+        let platform = createSprite(
+          currentPlatformLocation + 800,
+          random(300, 400),
+          1587,
+          336
+        );
+        platform.collide(runner);
+        currentPlatformLocation += currentPlatformLength;
+
+        platform.addAnimation("default", platform1587);
+        platform.depth = 3;
+        platformsGroup.add(platform);
+        createBin()
       }
     }
   }
@@ -299,6 +371,7 @@ function newGame() {
   firstPlatform = true;
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
+  switchBool=true
   index = 0;
   gameOver = false;
   playerScore = 0;
