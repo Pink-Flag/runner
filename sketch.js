@@ -29,7 +29,7 @@ var platform30;
 var platform35;
 var platform40;
 var platforms;
-var firstPlatform = true
+var firstPlatform = true;
 
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
@@ -86,9 +86,27 @@ function preload() {
   platform40 = loadImage("./Images/platform40.png");
 }
 
+function createFirstPlatform() {
+  console.log("here")
+  let currentPlatformLength = 1132;
+  let platform = createSprite(
+    currentPlatformLocation * 1.3,
+    random(300, 400),
+    1132,
+    336
+  );
+ 
+  console.log("FirstTime")
+  platform.collide(runner);
+  currentPlatformLocation += currentPlatformLength;
+  platform.addAnimation("default", platformBackground);
+  platform.depth = 3;
+  platformsGroup.add(platform);
+}
+
 function setup() {
   createCanvas(width, height);
-
+ 
   platforms = [
     platform5,
     platform10,
@@ -108,6 +126,7 @@ function setup() {
   runner.addAnimation("run", runningAnimation);
   runner.setCollider("rectangle", 0, 0, 10, 41);
   platformsGroup = new Group();
+  createFirstPlatform();
   backgroundTiles = new Group();
   currentBackgroundTilePosition = -width;
 }
@@ -115,14 +134,15 @@ function setup() {
 function draw() {
   if (!gameOver) {
     background(200);
-    console.log(firstPlatform)
+    // console.log(firstPlatform);
 
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
+    
     addNewPlatforms();
     jumpDetection();
-
+   
     camera.position.x = runner.position.x + 300;
     removeOldPlatforms();
     addNewBackgroundTiles();
@@ -233,46 +253,31 @@ function removeOldPlatforms() {
   }
 }
 
+
 function addNewPlatforms() {
-if (firstPlatform){
-  let currentPlatformLength = 1132;
-  let platform = createSprite(
-    currentPlatformLocation * 1.3,
-    random(300, 400),
-    1132,
-    336
-  );
-  platform.collide(runner);
-  currentPlatformLocation += currentPlatformLength;
-  platform.addAnimation("default", platformBackground);
-  platform.depth = 3;
-  platformsGroup.add(platform);
-  firstPlatform = false;
+ 
+    const index = Math.floor(random(0, 7));
+    let randomPlatform = platforms[index];
+    let platformLength = [326, 537, 537, 747, 1167, 1377, 1587, 1797];
 
-} else {
+    if (platformsGroup.length < 5) {
+      let currentPlatformLength = platformLength[index];
+      let platform = createSprite(
+        currentPlatformLocation * 1.3,
+        random(300, 400),
+        platformLength[index],
+        336
+      );
+      platform.collide(runner);
+      currentPlatformLocation += currentPlatformLength;
+      platform.addAnimation("default", randomPlatform);
+      platform.depth = 3;
+      platformsGroup.add(platform);
+      console.log(platformsGroup, "<<<Last")
+    }
 
-
-
-  const index = Math.floor(random(0, 7));
-  let randomPlatform = platforms[index];
-  let platformLength = [326, 537, 537, 747, 1167, 1377, 1587, 1797];
-
-  if (platformsGroup.length < 5) {
-    let currentPlatformLength = platformLength[index];
-    let platform = createSprite(
-      currentPlatformLocation * 1.3,
-      random(300, 400),
-      platformLength[index],
-      336
-    );
-    platform.collide(runner);
-    currentPlatformLocation += currentPlatformLength;
-    platform.addAnimation("default", randomPlatform);
-    platform.depth = 3;
-    platformsGroup.add(platform);
-  }
 }
-}
+
 
 function solidGround() {
   runner.velocity.y = 0;
