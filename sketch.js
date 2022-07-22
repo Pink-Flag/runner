@@ -18,6 +18,7 @@ var isFlashing = false;
 var currentBackgroundTilePosition;
 var backgroundTiles;
 var playerScore = 0;
+var playerLives = 3;
 var binGroup;
 const height = 390;
 const width = 840;
@@ -97,6 +98,7 @@ function preload() {
   platform1132 = loadImage("./Images/platform1132.png");
   platform1587 = loadImage("./Images/platform1587.png");
   transparentBin = loadImage("./Images/transparentBin.png");
+  heart = loadImage("./Images/heart.png");
 }
 
 function setup() {
@@ -109,7 +111,7 @@ function setup() {
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
   runner.addAnimation("run", runningAnimation);
-  runner.setCollider("rectangle", 10, 0, 10, 41);
+  runner.setCollider("rectangle", -5, 0, 10, 41);
   runner.addAnimation("flash", flashingAnimation);
   platformsGroup = new Group();
   binGroup = new Group();
@@ -128,7 +130,7 @@ function draw() {
     // runner.collide(binGroup, runnerFlash);
     addNewPlatforms();
     jumpDetection();
-    console.log(runnerSpeed);
+
     camera.position.x = runner.position.x + 300;
     removeOldPlatforms();
     addNewBackgroundTiles();
@@ -138,6 +140,7 @@ function draw() {
     fallCheck();
     drawSprites();
     updateScore();
+    updateLives();
     binGroup.collide(platformsGroup);
   }
   if (gameOver) {
@@ -180,6 +183,17 @@ function updateScore() {
   text(playerScore, camera.position.x + 350, camera.position.y + 160);
 }
 
+function updateLives() {
+  fill("white");
+  textFont(gameFont);
+  strokeWeight(2);
+  stroke("black");
+  textSize(20);
+  textAlign(CENTER);
+  image(heart, camera.position.x + 300, camera.position.y - 150);
+  text(playerLives, camera.position.x + 360, camera.position.y - 125);
+}
+
 function increaseRunnerSpeed() {
   runnerSpeed += 0.2;
 }
@@ -217,17 +231,32 @@ function gameOverText() {
 function slowDown() {
   runner.changeAnimation("flash");
   isFlashing = true;
+
+  // if (runnerSpeed > 7) {
+  runnerSpeed *= 0.5;
   setTimeout(function () {
     isFlashing = false;
-  }, 1000);
-  if (runnerSpeed > 7) {
-    runnerSpeed -= 3;
-  } else {
-    runnerSpeed -= 1;
-  }
+    setInterval(() => {
+      (runnerSpeed / 50) * 100;
+    }, 100);
 
+    runnerSpeed = (runnerSpeed / 50) * 100;
+  }, 1000);
+  // } else {
+  //   runnerSpeed -= 1;
+  //   setTimeout(function () {
+  //     isFlashing = false;
+  //     runnerSpeed += 1;
+  //   }, 1000);
+  // }
   binGroup.removeSprites();
   addBinToGroup();
+
+  playerLives--;
+
+  if (playerLives === -1) {
+    gameOver = true;
+  }
 }
 
 function addNewBackgroundTiles() {
@@ -245,7 +274,7 @@ function addNewBackgroundTiles() {
   }
 }
 function addBinToGroup() {
-  if (binGroup.length < 5) {
+  if (binGroup.length < 15) {
     let newBin = createSprite(
       currentPlatformLocation - distance[randomIndex()],
       150,
@@ -256,7 +285,7 @@ function addBinToGroup() {
     newBin.addAnimation("bin", transparentBin);
     newBin.depth = 4;
     newBin.setCollider("rectangle", 0, 0, 10, 41);
-    newBin.velocity.y += gravity + 1;
+    newBin.velocity.y += gravity + 5;
     binGroup.add(newBin);
   }
 }
@@ -300,6 +329,8 @@ function randomIndex() {
   }
 }
 
+// currentPlatformLength to increase/decrease distance between platforms
+
 function addNewPlatforms() {
   if (platformsGroup.length < 5) {
     switch (randomIndex()) {
@@ -307,7 +338,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(480, 520);
         let platform = createSprite(
           currentPlatformLocation + 50,
-          random(300, 400),
+          random(400, 500),
           327,
 
           336
@@ -322,10 +353,10 @@ function addNewPlatforms() {
         break;
       }
       case 1: {
-        let currentPlatformLength = random(775, 825);
+        let currentPlatformLength = random(675, 725);
         let platform = createSprite(
           currentPlatformLocation + 200,
-          random(300, 400),
+          random(400, 500),
           537,
 
           336
@@ -340,10 +371,10 @@ function addNewPlatforms() {
         break;
       }
       case 2: {
-        let currentPlatformLength = random(950, 1050);
+        let currentPlatformLength = random(850, 950);
         let platform = createSprite(
           currentPlatformLocation + 300,
-          random(300, 400),
+          random(400, 500),
           747,
           336
         );
@@ -357,10 +388,10 @@ function addNewPlatforms() {
         break;
       }
       case 3: {
-        let currentPlatformLength = random(1332, 1382);
+        let currentPlatformLength = random(1232, 1282);
         let platform = createSprite(
           currentPlatformLocation + 500,
-          random(300, 400),
+          random(400, 500),
           1132,
           336
         );
@@ -373,10 +404,10 @@ function addNewPlatforms() {
         break;
       }
       case 4: {
-        let currentPlatformLength = 1900;
+        let currentPlatformLength = 1800;
         let platform = createSprite(
           currentPlatformLocation + 800,
-          random(300, 400),
+          random(400, 500),
           1587,
           336
         );
@@ -406,8 +437,8 @@ function solidGround() {
 
 function jumpDetection() {
   if (
-    keyWentDown(UP_ARROW)
-    // (runner.velocity.y == 0 || runner.velocity.y == 1)
+    keyWentDown(UP_ARROW) &&
+    (runner.velocity.y === 0 || runner.velocity.y === 1)
   ) {
     if (!isFlashing) {
       runner.changeAnimation("jump");
@@ -424,6 +455,7 @@ function newGame() {
   firstPlatform = true;
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
+  playerLives = 3;
 
   binGroup.removeSprites();
   switchBool = true;
