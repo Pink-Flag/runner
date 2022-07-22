@@ -16,14 +16,23 @@ var runnerSpeed = 12;
 var currentBackgroundTilePosition;
 var backgroundTiles;
 var playerScore = 0;
+var binGroup;
 const height = 390;
 const width = 840;
 let musicOn = true;
-var switchBool
-var bin
+var switchBool;
+var bin;
+var platform1132,
+  platform1587,
+  platform327,
+  platform537,
+  platform747,
+  transparentBin;
 
 var currentPlatformLocation = 0;
 var index;
+var random;
+var distance = [200, 500, 800, 1100, 1500];
 
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
@@ -69,17 +78,17 @@ function preload() {
   jumpSound = loadSound(
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
-  platform327 = loadImage("./images/platform327.png");
-  platform537 = loadImage("./images/platform537.png");
-  platform747 = loadImage("./images/platform747.png");
-  platform1132 = loadImage("./images/platform1132.png");
-  platform1587 = loadImage("./images/platform1587.png");
-  transparentBin = loadImage("./images/transparentBin.png");
+  platform327 = loadImage("./Images/platform327.png");
+  platform537 = loadImage("./Images/platform537.png");
+  platform747 = loadImage("./Images/platform747.png");
+  platform1132 = loadImage("./Images/platform1132.png");
+  platform1587 = loadImage("./Images/platform1587.png");
+  transparentBin = loadImage("./Images/transparentBin.png");
 }
 
 function setup() {
   createCanvas(width, height);
-switchBool = true;
+  switchBool = true;
   gameMusic.play();
 
   gameMusic.play();
@@ -91,13 +100,12 @@ switchBool = true;
   runner.addAnimation("run", runningAnimation);
   runner.setCollider("rectangle", 0, 0, 10, 41);
 
-  bin = createSprite(1000, 120, 10, 10);
-  bin.depth = 5;
-  bin.addAnimation("bin", transparentBin);
-  bin.setCollider("rectangle", 0, 0, 10, 41);
-
+  // bin = createSprite(1000, 120, 10, 10);
+  // bin.depth = 5;
+  // bin.addAnimation("bin", transparentBin);
+  // bin.setCollider("rectangle", 0, 0, 10, 41);
   platformsGroup = new Group();
-
+  binGroup = new Group();
   backgroundTiles = new Group();
   currentBackgroundTilePosition = -width;
 }
@@ -107,12 +115,12 @@ function draw() {
     background(200);
 
     runner.velocity.y += gravity;
-    // bin.velocity.y += gravity;
-   
+
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
-    // bin.collide(platformsGroup);
-    
+
+    runner.collide(binGroup, isGameOver);
+
     addNewPlatforms();
     jumpDetection();
 
@@ -120,9 +128,13 @@ function draw() {
     removeOldPlatforms();
     addNewBackgroundTiles();
     removeOldBackgroundTiles();
+    removeOldBins();
+    addBinToGroup();
     fallCheck();
     drawSprites();
     updateScore();
+    binGroup.collide(platformsGroup);
+    // console.log(Object.getOwnPropertyNames(binGroup))
   }
   if (gameOver) {
     gameOverText();
@@ -136,7 +148,8 @@ function draw() {
 }
 
 function isGameOver() {
-  gameOver = !gameOver}
+  gameOver = !gameOver;
+}
 
 function muteGame() {
   musicOn = !musicOn;
@@ -213,6 +226,30 @@ function addNewBackgroundTiles() {
     backgroundTiles.add(bgLoop);
   }
 }
+function addBinToGroup() {
+  if (binGroup.length < 5) {
+    let newBin = createSprite(
+      currentPlatformLocation - distance[randomIndex()],
+      150,
+      10,
+      10
+    );
+
+    newBin.addAnimation("bin", transparentBin);
+    newBin.depth = 4;
+    newBin.setCollider("rectangle", 0, 0, 10, 41);
+    newBin.velocity.y += gravity + 1;
+    binGroup.add(newBin);
+  }
+}
+function removeOldBins() {
+  for (let i = 0; i < binGroup.length; i++) {
+    if (binGroup[i].position.x < runner.position.x - 1500) {
+      binGroup[i].remove();
+    }
+  }
+}
+
 function removeOldBackgroundTiles() {
   for (let i = 0; i < backgroundTiles.length; i++) {
     if (backgroundTiles[i].position.x < runner.position.x - width) {
@@ -222,7 +259,6 @@ function removeOldBackgroundTiles() {
 }
 
 function removeOldPlatforms() {
-  console.log("fuck you");
   for (let i = 0; i < platformsGroup.length; i++) {
     if (platformsGroup[i].position.x < runner.position.x - 1500) {
       platformsGroup[i].remove();
@@ -232,33 +268,38 @@ function removeOldPlatforms() {
 
 function randomIndex() {
   if (switchBool) {
-    switchBool=!switchBool
+    switchBool = !switchBool;
     return 4;
-} else {
-  return Math.floor(Math.random(0, 4))
-}
+  } else {
+    var milliseconds = new Date().getMilliseconds();
+    let index = Math.floor((milliseconds * 5) / 1000);
+
+    return index;
+  }
 }
 
-function createBin() {
-  bin = createSprite(currentPlatformLocation, -100, 10, 10);
+var createBin = function () {
+  bin = createSprite(
+    currentPlatformLocation - distance[randomIndex()],
+    -100,
+    10,
+    10
+  );
   // bin.depth = 5;
   bin.addAnimation("bin", transparentBin);
   bin.setCollider("rectangle", 0, 100, 10, 41);
-  bin.velocity.y += gravity;
+  // bin.velocity.y += gravity;
   bin.collide(platformsGroup, solidGround);
-  runner.collide(bin, isGameOver);
-}
-
-
+  // runner.collide(bin, isGameOver);
+};
 function addNewPlatforms() {
   if (platformsGroup.length < 5) {
     switch (randomIndex()) {
       case 0: {
-        console.log(2);
         let currentPlatformLength = random(480, 520);
         let platform = createSprite(
           currentPlatformLocation + 50,
-          random(300, 400),
+          400,
           327,
 
           336
@@ -269,15 +310,14 @@ function addNewPlatforms() {
         platform.addAnimation("default", platform327);
         platform.depth = 3;
         platformsGroup.add(platform);
-        createBin()
-        
+
+        break;
       }
       case 1: {
-        console.log("1");
         let currentPlatformLength = random(775, 825);
         let platform = createSprite(
           currentPlatformLocation + 200,
-          random(300, 400),
+          400,
           537,
 
           336
@@ -288,14 +328,14 @@ function addNewPlatforms() {
         platform.addAnimation("default", platform537);
         platform.depth = 3;
         platformsGroup.add(platform);
-        createBin()
+
+        break;
       }
       case 2: {
-        console.log(3);
         let currentPlatformLength = random(950, 1050);
         let platform = createSprite(
           currentPlatformLocation + 300,
-          random(300, 400),
+          400,
           747,
           336
         );
@@ -305,14 +345,14 @@ function addNewPlatforms() {
         platform.addAnimation("default", platform747);
         platform.depth = 3;
         platformsGroup.add(platform);
-        createBin()
+
+        break;
       }
       case 3: {
-        console.log("0");
         let currentPlatformLength = random(1332, 1382);
         let platform = createSprite(
           currentPlatformLocation + 500,
-          random(300, 400),
+          400,
           1132,
           336
         );
@@ -321,14 +361,14 @@ function addNewPlatforms() {
         platform.addAnimation("default", platform1132);
         platform.depth = 3;
         platformsGroup.add(platform);
-        createBin()
+
+        break;
       }
       case 4: {
-        console.log(4);
         let currentPlatformLength = 1900;
         let platform = createSprite(
           currentPlatformLocation + 800,
-          random(300, 400),
+          400,
           1587,
           336
         );
@@ -338,7 +378,8 @@ function addNewPlatforms() {
         platform.addAnimation("default", platform1587);
         platform.depth = 3;
         platformsGroup.add(platform);
-        createBin()
+
+        break;
       }
     }
   }
@@ -352,11 +393,19 @@ function solidGround() {
     runner.velocity.y += 30;
   }
 }
+// function binSolidGround() {
+//   runner.velocity.y = 0;
+//   runner.changeAnimation("run");
+//   if (runner.touching.right) {
+//     runner.velocity.x = 0;
+//     runner.velocity.y += 30;
+//   }
+// }
 
 function jumpDetection() {
   if (
-    keyWentDown(UP_ARROW) &&
-    (runner.velocity.y == 0 || runner.velocity.y == 1)
+    keyWentDown(UP_ARROW)
+    // (runner.velocity.y == 0 || runner.velocity.y == 1)
   ) {
     runner.changeAnimation("jump");
     runner.animation.rewind();
@@ -371,7 +420,8 @@ function newGame() {
   firstPlatform = true;
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
-  switchBool=true
+  // binGroup.removeSprites()
+  switchBool = true;
   index = 0;
   gameOver = false;
   playerScore = 0;
