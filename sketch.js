@@ -129,7 +129,7 @@ function draw() {
     drawSprites();
     updateScore();
     binGroup.collide(platformsGroup);
-    // console.log(Object.getOwnPropertyNames(binGroup))
+  
   }
   if (gameOver) {
     gameOverText();
@@ -284,20 +284,6 @@ function randomIndex() {
   }
 }
 
-var createBin = function () {
-  bin = createSprite(
-    currentPlatformLocation - distance[randomIndex()],
-    -100,
-    10,
-    10
-  );
-  // bin.depth = 5;
-  bin.addAnimation("bin", transparentBin);
-  bin.setCollider("rectangle", 0, 100, 10, 41);
-  // bin.velocity.y += gravity;
-  bin.collide(platformsGroup, solidGround);
-  // runner.collide(bin, isGameOver);
-};
 function addNewPlatforms() {
   if (platformsGroup.length < 5) {
     switch (randomIndex()) {
@@ -305,7 +291,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(480, 520);
         let platform = createSprite(
           currentPlatformLocation + 50,
-          400,
+         random(300,400),
           327,
 
           336
@@ -323,7 +309,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(775, 825);
         let platform = createSprite(
           currentPlatformLocation + 200,
-          400,
+          random(300,400),
           537,
 
           336
@@ -341,7 +327,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(950, 1050);
         let platform = createSprite(
           currentPlatformLocation + 300,
-          400,
+          random(300,400),
           747,
           336
         );
@@ -358,7 +344,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(1332, 1382);
         let platform = createSprite(
           currentPlatformLocation + 500,
-          400,
+          random(300,400),
           1132,
           336
         );
@@ -374,7 +360,7 @@ function addNewPlatforms() {
         let currentPlatformLength = 1900;
         let platform = createSprite(
           currentPlatformLocation + 800,
-          400,
+          random (300,400),
           1587,
           336
         );
@@ -399,14 +385,7 @@ function solidGround() {
     runner.velocity.y += 30;
   }
 }
-// function binSolidGround() {
-//   runner.velocity.y = 0;
-//   runner.changeAnimation("run");
-//   if (runner.touching.right) {
-//     runner.velocity.x = 0;
-//     runner.velocity.y += 30;
-//   }
-// }
+
 
 function jumpDetection() {
   if (
