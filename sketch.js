@@ -98,12 +98,7 @@ function setup() {
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
   runner.addAnimation("run", runningAnimation);
-  runner.setCollider("rectangle", 0, 0, 10, 41);
-
-  // bin = createSprite(1000, 120, 10, 10);
-  // bin.depth = 5;
-  // bin.addAnimation("bin", transparentBin);
-  // bin.setCollider("rectangle", 0, 0, 10, 41);
+  runner.setCollider("rectangle", 10, 0, 10, 41);
   platformsGroup = new Group();
   binGroup = new Group();
   backgroundTiles = new Group();
@@ -119,11 +114,11 @@ function draw() {
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
 
-    runner.collide(binGroup, isGameOver);
+    runner.collide(binGroup, slowDown);
 
     addNewPlatforms();
     jumpDetection();
-
+    console.log(runnerSpeed);
     camera.position.x = runner.position.x + 300;
     removeOldPlatforms();
     addNewBackgroundTiles();
@@ -210,6 +205,17 @@ function gameOverText() {
     camera.position.x,
     camera.position.y + 50
   );
+}
+
+function slowDown() {
+  if(runnerSpeed > 7){
+    runnerSpeed -= 7;
+  }else{
+    runnerSpeed -=1
+  }
+   
+  binGroup.removeSprites()
+  addBinToGroup()
 }
 
 function addNewBackgroundTiles() {
@@ -420,7 +426,8 @@ function newGame() {
   firstPlatform = true;
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
-  // binGroup.removeSprites()
+
+  binGroup.removeSprites()
   switchBool = true;
   index = 0;
   gameOver = false;
