@@ -2,7 +2,7 @@ var circlePosition;
 var runner;
 var runningAnimation;
 var jumpingAnimation;
-var flashingAnimation
+var flashingAnimation;
 var gameBackground;
 var platformBackground;
 var gameFont;
@@ -14,6 +14,7 @@ var platformsGroup;
 var gravity = 1;
 var jumpPower = 15;
 var runnerSpeed = 12;
+var isFlashing = false;
 var currentBackgroundTilePosition;
 var backgroundTiles;
 var playerScore = 0;
@@ -63,14 +64,14 @@ function preload() {
 
   flashingAnimation = loadAnimation(
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run00.png",
-    "./Images/transparentBin.png",
+    "./Images/run01.png",
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run02.png",
-    "./Images/transparentBin.png",
+    "./Images/run03.png",
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run04.png",
-    "./Images/transparentBin.png",
+    "./Images/run05.png",
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run06.png",
-    "./Images/transparentBin.png"
-  )
+    "./Images/run07.png"
+  );
 
   gameBackground = loadImage(
     "https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultBackground.png"
@@ -109,7 +110,7 @@ function setup() {
   runner.addAnimation("jump", jumpingAnimation);
   runner.addAnimation("run", runningAnimation);
   runner.setCollider("rectangle", 10, 0, 10, 41);
-  runner.addAnimation("flash",flashingAnimation )
+  runner.addAnimation("flash", flashingAnimation);
   platformsGroup = new Group();
   binGroup = new Group();
   backgroundTiles = new Group();
@@ -121,8 +122,8 @@ function draw() {
     background(200);
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
-    runner.collide(platformsGroup, solidGround);    
-    
+    runner.collide(platformsGroup, solidGround);
+
     runner.collide(binGroup, slowDown);
     // runner.collide(binGroup, runnerFlash);
     addNewPlatforms();
@@ -138,7 +139,6 @@ function draw() {
     drawSprites();
     updateScore();
     binGroup.collide(platformsGroup);
-  
   }
   if (gameOver) {
     gameOverText();
@@ -215,16 +215,19 @@ function gameOverText() {
 }
 
 function slowDown() {
-    runner.changeAnimation("flash")
-  if(runnerSpeed > 7){
-    runnerSpeed -= 7;
-  }else{
-    runnerSpeed -=1
+  runner.changeAnimation("flash");
+  isFlashing = true;
+  setTimeout(function () {
+    isFlashing = false;
+  }, 1000);
+  if (runnerSpeed > 7) {
+    runnerSpeed -= 3;
+  } else {
+    runnerSpeed -= 1;
   }
 
-  binGroup.removeSprites()
-  addBinToGroup()
- 
+  binGroup.removeSprites();
+  addBinToGroup();
 }
 
 function addNewBackgroundTiles() {
@@ -281,8 +284,8 @@ function removeOldPlatforms() {
   }
 }
 
-function runnerFlash(){
-  runner.changeAnimation("flash")
+function runnerFlash() {
+  runner.changeAnimation("flash");
 }
 
 function randomIndex() {
@@ -304,7 +307,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(480, 520);
         let platform = createSprite(
           currentPlatformLocation + 50,
-         random(300,400),
+          random(300, 400),
           327,
 
           336
@@ -322,7 +325,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(775, 825);
         let platform = createSprite(
           currentPlatformLocation + 200,
-          random(300,400),
+          random(300, 400),
           537,
 
           336
@@ -340,7 +343,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(950, 1050);
         let platform = createSprite(
           currentPlatformLocation + 300,
-          random(300,400),
+          random(300, 400),
           747,
           336
         );
@@ -357,7 +360,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(1332, 1382);
         let platform = createSprite(
           currentPlatformLocation + 500,
-          random(300,400),
+          random(300, 400),
           1132,
           336
         );
@@ -373,7 +376,7 @@ function addNewPlatforms() {
         let currentPlatformLength = 1900;
         let platform = createSprite(
           currentPlatformLocation + 800,
-          random (300,400),
+          random(300, 400),
           1587,
           336
         );
@@ -392,20 +395,23 @@ function addNewPlatforms() {
 
 function solidGround() {
   runner.velocity.y = 0;
-  // runner.changeAnimation("run");
+  if (!isFlashing) {
+    runner.changeAnimation("run");
+  }
   if (runner.touching.right) {
     runner.velocity.x = 0;
     runner.velocity.y += 30;
   }
 }
 
-
 function jumpDetection() {
   if (
     keyWentDown(UP_ARROW)
     // (runner.velocity.y == 0 || runner.velocity.y == 1)
   ) {
-    runner.changeAnimation("jump");
+    if (!isFlashing) {
+      runner.changeAnimation("jump");
+    }
     runner.animation.rewind();
     runner.velocity.y = -jumpPower;
     if (musicOn) {
@@ -419,7 +425,7 @@ function newGame() {
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
 
-  binGroup.removeSprites()
+  binGroup.removeSprites();
   switchBool = true;
   index = 0;
   gameOver = false;
