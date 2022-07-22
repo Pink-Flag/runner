@@ -2,6 +2,7 @@ var circlePosition;
 var runner;
 var runningAnimation;
 var jumpingAnimation;
+var flashingAnimation
 var gameBackground;
 var platformBackground;
 var gameFont;
@@ -60,6 +61,17 @@ function preload() {
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run07.png"
   );
 
+  flashingAnimation = loadAnimation(
+    "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run00.png",
+    "./Images/transparentBin.png",
+    "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run02.png",
+    "./Images/transparentBin.png",
+    "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run04.png",
+    "./Images/transparentBin.png",
+    "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run06.png",
+    "./Images/transparentBin.png"
+  )
+
   gameBackground = loadImage(
     "https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultBackground.png"
   );
@@ -90,15 +102,14 @@ function setup() {
   createCanvas(width, height);
   switchBool = true;
   gameMusic.play();
-
   gameMusic.play();
   index = 0;
-
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
   runner.addAnimation("run", runningAnimation);
   runner.setCollider("rectangle", 10, 0, 10, 41);
+  runner.addAnimation("flash",flashingAnimation )
   platformsGroup = new Group();
   binGroup = new Group();
   backgroundTiles = new Group();
@@ -108,14 +119,12 @@ function setup() {
 function draw() {
   if (!gameOver) {
     background(200);
-
     runner.velocity.y += gravity;
-
     runner.velocity.x = runnerSpeed;
-    runner.collide(platformsGroup, solidGround);
-
+    runner.collide(platformsGroup, solidGround);    
+    
     runner.collide(binGroup, slowDown);
-
+    // runner.collide(binGroup, runnerFlash);
     addNewPlatforms();
     jumpDetection();
     console.log(runnerSpeed);
@@ -148,7 +157,6 @@ function isGameOver() {
 
 function muteGame() {
   musicOn = !musicOn;
-
   if (musicOn) {
     gameMusic.setVolume(1);
   } else {
@@ -192,7 +200,6 @@ function gameOverText() {
   stroke("black");
   textAlign(CENTER);
   textFont(gameFont);
-
   strokeWeight(2);
   textSize(90);
   strokeWeight(10);
@@ -208,14 +215,16 @@ function gameOverText() {
 }
 
 function slowDown() {
+    runner.changeAnimation("flash")
   if(runnerSpeed > 7){
     runnerSpeed -= 7;
   }else{
     runnerSpeed -=1
   }
-   
+
   binGroup.removeSprites()
   addBinToGroup()
+ 
 }
 
 function addNewBackgroundTiles() {
@@ -270,6 +279,10 @@ function removeOldPlatforms() {
       platformsGroup[i].remove();
     }
   }
+}
+
+function runnerFlash(){
+  runner.changeAnimation("flash")
 }
 
 function randomIndex() {
@@ -379,7 +392,7 @@ function addNewPlatforms() {
 
 function solidGround() {
   runner.velocity.y = 0;
-  runner.changeAnimation("run");
+  // runner.changeAnimation("run");
   if (runner.touching.right) {
     runner.velocity.x = 0;
     runner.velocity.y += 30;
