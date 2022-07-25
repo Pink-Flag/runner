@@ -2,7 +2,7 @@ var circlePosition;
 var runner;
 var runningAnimation;
 var jumpingAnimation;
-var flashingAnimation
+var flashingAnimation;
 var gameBackground;
 var platformBackground;
 var gameFont;
@@ -14,7 +14,7 @@ var platformsGroup;
 var solar;
 var gravity = 1;
 var jumpPower = 15;
-var runnerSpeed = 4;
+var runnerSpeed = 12;
 var isFlashing = false;
 var currentBackgroundTilePosition;
 var backgroundTiles;
@@ -78,42 +78,41 @@ function preload() {
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run06.png",
     "./Images/run07.png"
   );
- sparkleAnimation = loadAnimation(
-  "./Images/explosion/tile000.png",
-  "./Images/explosion/tile001.png",
-  "./Images/explosion/tile002.png",
-  "./Images/explosion/tile003.png",
-  "./Images/explosion/tile004.png",
-  "./Images/explosion/tile005.png",
-  "./Images/explosion/tile006.png",
-  "./Images/explosion/tile007.png",
-  "./Images/explosion/tile008.png",
-  "./Images/explosion/tile009.png",
-  "./Images/explosion/tile010.png",
-  "./Images/explosion/tile011.png",
-  "./Images/explosion/tile012.png",
-  "./Images/explosion/tile013.png",
-  "./Images/explosion/tile014.png",
-  "./Images/explosion/tile015.png",
-  "./Images/explosion/tile016.png",
-  "./Images/explosion/tile017.png",
-  "./Images/explosion/tile018.png",
-  "./Images/explosion/tile019.png",
-  "./Images/explosion/tile020.png",
-  "./Images/explosion/tile021.png",
-  "./Images/explosion/tile022.png",
-  "./Images/explosion/tile023.png",
-  "./Images/explosion/tile023.png",
-  "./Images/explosion/tile024.png",
-  "./Images/explosion/tile025.png",
-  "./Images/explosion/tile026.png",
-  "./Images/explosion/tile027.png",
-  "./Images/explosion/tile028.png",
-  "./Images/explosion/tile029.png",
-  "./Images/explosion/tile030.png",
-  "./Images/explosion/tile031.png",
- 
- )
+  sparkleAnimation = loadAnimation(
+    "./Images/explosion/tile000.png",
+    "./Images/explosion/tile001.png",
+    "./Images/explosion/tile002.png",
+    "./Images/explosion/tile003.png",
+    "./Images/explosion/tile004.png",
+    "./Images/explosion/tile005.png",
+    "./Images/explosion/tile006.png",
+    "./Images/explosion/tile007.png",
+    "./Images/explosion/tile008.png",
+    "./Images/explosion/tile009.png",
+    "./Images/explosion/tile010.png",
+    "./Images/explosion/tile011.png",
+    "./Images/explosion/tile012.png",
+    "./Images/explosion/tile013.png",
+    "./Images/explosion/tile014.png",
+    "./Images/explosion/tile015.png",
+    "./Images/explosion/tile016.png",
+    "./Images/explosion/tile017.png",
+    "./Images/explosion/tile018.png",
+    "./Images/explosion/tile019.png",
+    "./Images/explosion/tile020.png",
+    "./Images/explosion/tile021.png",
+    "./Images/explosion/tile022.png",
+    "./Images/explosion/tile023.png",
+    "./Images/explosion/tile023.png",
+    "./Images/explosion/tile024.png",
+    "./Images/explosion/tile025.png",
+    "./Images/explosion/tile026.png",
+    "./Images/explosion/tile027.png",
+    "./Images/explosion/tile028.png",
+    "./Images/explosion/tile029.png",
+    "./Images/explosion/tile030.png",
+    "./Images/explosion/tile031.png"
+  );
 
   gameBackground = loadImage(
     "https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultBackground.png"
@@ -133,9 +132,6 @@ function preload() {
   jumpSound = loadSound(
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
-
-  sparkleSpriteSheet = loadSpriteSheet("./Images/sparkle.png", 64, 64, 32);
-  sparkleAnimation = loadAnimation(sparkleSpriteSheet);
 
   platform327 = loadImage("./Images/platform327.png");
   platform537 = loadImage("./Images/platform537.png");
@@ -175,7 +171,7 @@ function draw() {
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
 
-    runner.collide(binGroup, slowDown);
+    runner.overlap(binGroup, hitBin);
     runner.overlap(coinGroup, collectCoin);
 
     addNewPlatforms();
@@ -186,7 +182,7 @@ function draw() {
     addNewBackgroundTiles();
     removeOldBackgroundTiles();
     removeOldBins();
-    // addBinToGroup();
+    addBinToGroup();
     addCoinToGroup();
     removeCoins();
 
@@ -281,11 +277,10 @@ function gameOverText() {
   );
 }
 
-function slowDown() {
+function hitBin(runner, bin) {
   runner.changeAnimation("flash");
   isFlashing = true;
 
-  // if (runnerSpeed > 7) {
   runnerSpeed *= 0.5;
   setTimeout(function () {
     isFlashing = false;
@@ -295,15 +290,8 @@ function slowDown() {
 
     runnerSpeed = (runnerSpeed / 50) * 100;
   }, 1000);
-  // } else {
-  //   runnerSpeed -= 1;
-  //   setTimeout(function () {
-  //     isFlashing = false;
-  //     runnerSpeed += 1;
-  //   }, 1000);
-  // }
-  binGroup.removeSprites();
-  addBinToGroup();
+
+  bin.remove();
 
   playerLives--;
 
@@ -326,10 +314,15 @@ function addNewBackgroundTiles() {
     backgroundTiles.add(bgLoop);
   }
 }
+
+function binIndex() {
+  return Math.random() * 500;
+}
+
 function addBinToGroup() {
-  if (binGroup.length < 15) {
+  if (binGroup.length < 2) {
     let newBin = createSprite(
-      currentPlatformLocation - distance[randomIndex()],
+      currentPlatformLocation - binIndex(),
       150,
       10,
       10
@@ -344,7 +337,7 @@ function addBinToGroup() {
 }
 function removeOldBins() {
   for (let i = 0; i < binGroup.length; i++) {
-    if (binGroup[i].position.x < runner.position.x - 1500) {
+    if (binGroup[i].position.x < runner.position.x - 3000) {
       binGroup[i].remove();
     }
   }
@@ -355,7 +348,7 @@ function coinIndex() {
 }
 
 function addCoinToGroup() {
-  if (coinGroup.length < 100) {
+  if (coinGroup.length < 15) {
     let newCoin = createSprite(
       currentPlatformLocation - coinIndex(),
       random(100, 200),
@@ -363,33 +356,25 @@ function addCoinToGroup() {
       10
     );
     newCoin.addAnimation("coin", solar);
-    newCoin.addAnimation("sparkle", sparkleAnimation)
-    // newCoin.rotationSpeed = random(-5, 5);
+    newCoin.addAnimation("sparkle", sparkleAnimation);
     newCoin.depth = 4;
     newCoin.setCollider("rectangle", 0, 0, 10, 41);
-    newCoin.velocity.y=0;
-    newCoin.velocity.x=0;
+    newCoin.velocity.y = 0;
+    newCoin.velocity.x = 0;
     coinGroup.add(newCoin);
   }
 }
 
 function collectCoin(runner, coin) {
-  // console.log(sparkleAnimation.images);
-
-  // for (let i = 0; i < 33; i++) {
-  //   sparkleAnimation.images.drawFrame()
-  // }
-  console.log(sparkleAnimation)
-  coin.changeAnimation("sparkle")
-  // coin.remove();
-  // animation(sparkleAnimation, coin.position.x, coin.position.y);
+  console.log(sparkleAnimation);
+  coin.changeAnimation("sparkle");
+  coin.rotationSpeed = random(-20, 20);
   playerScore += 1;
 }
 
 function removeCoins() {
   for (let i = 0; i < coinGroup.length; i++) {
     if (coinGroup[i].position.x < runner.position.x - 1500) {
-      // console.log(coinGroup[i].position.x);
       coinGroup[i].remove();
     }
   }
