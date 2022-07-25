@@ -2,7 +2,7 @@ var circlePosition;
 var runner;
 var runningAnimation;
 var jumpingAnimation;
-var flashingAnimation;
+var flashingAnimation
 var gameBackground;
 var platformBackground;
 var gameFont;
@@ -14,7 +14,7 @@ var platformsGroup;
 var solar;
 var gravity = 1;
 var jumpPower = 15;
-var runnerSpeed = 12;
+var runnerSpeed = 4;
 var isFlashing = false;
 var currentBackgroundTilePosition;
 var backgroundTiles;
@@ -78,6 +78,42 @@ function preload() {
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run06.png",
     "./Images/run07.png"
   );
+ sparkleAnimation = loadAnimation(
+  "./Images/explosion/tile000.png",
+  "./Images/explosion/tile001.png",
+  "./Images/explosion/tile002.png",
+  "./Images/explosion/tile003.png",
+  "./Images/explosion/tile004.png",
+  "./Images/explosion/tile005.png",
+  "./Images/explosion/tile006.png",
+  "./Images/explosion/tile007.png",
+  "./Images/explosion/tile008.png",
+  "./Images/explosion/tile009.png",
+  "./Images/explosion/tile010.png",
+  "./Images/explosion/tile011.png",
+  "./Images/explosion/tile012.png",
+  "./Images/explosion/tile013.png",
+  "./Images/explosion/tile014.png",
+  "./Images/explosion/tile015.png",
+  "./Images/explosion/tile016.png",
+  "./Images/explosion/tile017.png",
+  "./Images/explosion/tile018.png",
+  "./Images/explosion/tile019.png",
+  "./Images/explosion/tile020.png",
+  "./Images/explosion/tile021.png",
+  "./Images/explosion/tile022.png",
+  "./Images/explosion/tile023.png",
+  "./Images/explosion/tile023.png",
+  "./Images/explosion/tile024.png",
+  "./Images/explosion/tile025.png",
+  "./Images/explosion/tile026.png",
+  "./Images/explosion/tile027.png",
+  "./Images/explosion/tile028.png",
+  "./Images/explosion/tile029.png",
+  "./Images/explosion/tile030.png",
+  "./Images/explosion/tile031.png",
+ 
+ )
 
   gameBackground = loadImage(
     "https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultBackground.png"
@@ -98,7 +134,7 @@ function preload() {
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
 
-  sparkleSpriteSheet = loadSpriteSheet("./Images/sparkle.png", 32, 32, 32);
+  sparkleSpriteSheet = loadSpriteSheet("./Images/sparkle.png", 64, 64, 32);
   sparkleAnimation = loadAnimation(sparkleSpriteSheet);
 
   platform327 = loadImage("./Images/platform327.png");
@@ -133,7 +169,7 @@ function setup() {
 function draw() {
   if (!gameOver) {
     background(200);
-    animation(sparkleAnimation, 100, 100);
+    // animation(sparkleAnimation, 200, 200);
 
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
@@ -327,11 +363,12 @@ function addCoinToGroup() {
       10
     );
     newCoin.addAnimation("coin", solar);
-
+    newCoin.addAnimation("sparkle", sparkleAnimation)
     // newCoin.rotationSpeed = random(-5, 5);
     newCoin.depth = 4;
     newCoin.setCollider("rectangle", 0, 0, 10, 41);
-    // newCoin.velocity.y += gravity + 5;
+    newCoin.velocity.y=0;
+    newCoin.velocity.x=0;
     coinGroup.add(newCoin);
   }
 }
@@ -342,9 +379,10 @@ function collectCoin(runner, coin) {
   // for (let i = 0; i < 33; i++) {
   //   sparkleAnimation.images.drawFrame()
   // }
-
-  coin.remove();
-  animation(sparkleAnimation, coin.position.x, coin.position.y);
+  console.log(sparkleAnimation)
+  coin.changeAnimation("sparkle")
+  // coin.remove();
+  // animation(sparkleAnimation, coin.position.x, coin.position.y);
   playerScore += 1;
 }
 
