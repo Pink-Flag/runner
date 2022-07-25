@@ -11,6 +11,7 @@ var gameOverMusic;
 var jumpSound;
 var gameOver = false;
 var platformsGroup;
+var solar;
 var gravity = 1;
 var jumpPower = 15;
 var runnerSpeed = 12;
@@ -20,11 +21,15 @@ var backgroundTiles;
 var playerScore = 0;
 var playerLives = 3;
 var binGroup;
+var sparkleSpriteSheet;
+var sparkleAnimation;
+
 const height = 390;
 const width = 840;
 let musicOn = true;
 var switchBool;
 var bin;
+var coinGroup;
 var platform1132,
   platform1587,
   platform327,
@@ -92,6 +97,10 @@ function preload() {
   jumpSound = loadSound(
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
+
+  sparkleSpriteSheet = loadSpriteSheet("./Images/sparkle.png", 32, 32, 32);
+  sparkleAnimation = loadAnimation(sparkleSpriteSheet);
+
   platform327 = loadImage("./Images/platform327.png");
   platform537 = loadImage("./Images/platform537.png");
   platform747 = loadImage("./Images/platform747.png");
@@ -99,6 +108,7 @@ function preload() {
   platform1587 = loadImage("./Images/platform1587.png");
   transparentBin = loadImage("./Images/transparentBin.png");
   heart = loadImage("./Images/heart.png");
+  solar = loadImage("./Images/solar.png");
 }
 
 function setup() {
@@ -115,6 +125,7 @@ function setup() {
   runner.addAnimation("flash", flashingAnimation);
   platformsGroup = new Group();
   binGroup = new Group();
+  coinGroup = new Group();
   backgroundTiles = new Group();
   currentBackgroundTilePosition = -width;
 }
@@ -122,12 +133,15 @@ function setup() {
 function draw() {
   if (!gameOver) {
     background(200);
+    animation(sparkleAnimation, 100, 100);
+
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
 
     runner.collide(binGroup, slowDown);
-    // runner.collide(binGroup, runnerFlash);
+    runner.overlap(coinGroup, collectCoin);
+
     addNewPlatforms();
     jumpDetection();
 
@@ -136,7 +150,10 @@ function draw() {
     addNewBackgroundTiles();
     removeOldBackgroundTiles();
     removeOldBins();
-    addBinToGroup();
+    // addBinToGroup();
+    addCoinToGroup();
+    removeCoins();
+
     fallCheck();
     drawSprites();
     updateScore();
@@ -170,7 +187,7 @@ function muteGame() {
 
 function updateScore() {
   if (frameCount % 60 === 0) {
-    playerScore++;
+    // playerScore++;
     increaseRunnerSpeed();
   }
 
@@ -269,7 +286,7 @@ function addNewBackgroundTiles() {
       height
     );
     bgLoop.addAnimation("bg", gameBackground);
-    bgLoop.depth = 1;
+    bgLoop.depth = -1;
     backgroundTiles.add(bgLoop);
   }
 }
@@ -293,6 +310,49 @@ function removeOldBins() {
   for (let i = 0; i < binGroup.length; i++) {
     if (binGroup[i].position.x < runner.position.x - 1500) {
       binGroup[i].remove();
+    }
+  }
+}
+
+function coinIndex() {
+  return Math.random() * 3000;
+}
+
+function addCoinToGroup() {
+  if (coinGroup.length < 100) {
+    let newCoin = createSprite(
+      currentPlatformLocation - coinIndex(),
+      random(100, 200),
+      10,
+      10
+    );
+    newCoin.addAnimation("coin", solar);
+
+    // newCoin.rotationSpeed = random(-5, 5);
+    newCoin.depth = 4;
+    newCoin.setCollider("rectangle", 0, 0, 10, 41);
+    // newCoin.velocity.y += gravity + 5;
+    coinGroup.add(newCoin);
+  }
+}
+
+function collectCoin(runner, coin) {
+  // console.log(sparkleAnimation.images);
+
+  // for (let i = 0; i < 33; i++) {
+  //   sparkleAnimation.images.drawFrame()
+  // }
+
+  coin.remove();
+  animation(sparkleAnimation, coin.position.x, coin.position.y);
+  playerScore += 1;
+}
+
+function removeCoins() {
+  for (let i = 0; i < coinGroup.length; i++) {
+    if (coinGroup[i].position.x < runner.position.x - 1500) {
+      // console.log(coinGroup[i].position.x);
+      coinGroup[i].remove();
     }
   }
 }
@@ -323,21 +383,22 @@ function randomIndex() {
     return 4;
   } else {
     var milliseconds = new Date().getMilliseconds();
-    let index = Math.floor((milliseconds * 5) / 1000);
+    let index = Math.floor((milliseconds * 7) / 1000);
 
     return index;
   }
 }
 
-// currentPlatformLength to increase/decrease distance between platforms
+// currentPlatformLength to increase/decrease distance END of platforms
+// currentPlatformLocation to increase/decrease distance START platforms
 
 function addNewPlatforms() {
   if (platformsGroup.length < 5) {
     switch (randomIndex()) {
       case 0: {
-        let currentPlatformLength = random(480, 520);
+        let currentPlatformLength = random(560, 600);
         let platform = createSprite(
-          currentPlatformLocation + 50,
+          currentPlatformLocation + 200,
           random(400, 500),
           327,
 
@@ -403,7 +464,7 @@ function addNewPlatforms() {
 
         break;
       }
-      case 4: {
+      default: {
         let currentPlatformLength = 1800;
         let platform = createSprite(
           currentPlatformLocation + 800,
@@ -437,8 +498,8 @@ function solidGround() {
 
 function jumpDetection() {
   if (
-    keyWentDown(UP_ARROW) &&
-    (runner.velocity.y === 0 || runner.velocity.y === 1)
+    keyWentDown(UP_ARROW)
+    // (runner.velocity.y === 0 || runner.velocity.y === 1)
   ) {
     if (!isFlashing) {
       runner.changeAnimation("jump");
@@ -455,6 +516,7 @@ function newGame() {
   firstPlatform = true;
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
+  coinGroup.removeSprites();
   playerLives = 3;
 
   binGroup.removeSprites();
