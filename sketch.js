@@ -251,6 +251,7 @@ function updateLives() {
 
 function increaseRunnerSpeed() {
   runnerSpeed += 0.2;
+  waterHeight-=1;
 }
 
 function fallCheck() {
@@ -416,6 +417,7 @@ function collectCoin(runner, coin) {
   coin.changeAnimation("sparkle");
   coin.rotationSpeed = random(-20, 20);
   playerScore += 1;
+  waterHeight+=0.5;
 }
 
 function removeCoins() {
@@ -468,7 +470,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(560, 600);
         let platform = createSprite(
           currentPlatformLocation + 200,
-          random(400, 500),
+          random(350, 450),
           327,
 
           336
@@ -486,7 +488,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(675, 725);
         let platform = createSprite(
           currentPlatformLocation + 200,
-          random(400, 500),
+          random(350, 450),
           537,
 
           336
@@ -504,7 +506,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(850, 950);
         let platform = createSprite(
           currentPlatformLocation + 300,
-          random(400, 500),
+          random(350, 450),
           747,
           336
         );
@@ -521,7 +523,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(1232, 1282);
         let platform = createSprite(
           currentPlatformLocation + 500,
-          random(400, 500),
+          random(350, 450),
           1132,
           336
         );
@@ -537,7 +539,7 @@ function addNewPlatforms() {
         let currentPlatformLength = 1800;
         let platform = createSprite(
           currentPlatformLocation + 800,
-          random(400, 500),
+          random(350, 450),
           1587,
           336
         );
