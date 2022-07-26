@@ -304,13 +304,16 @@ function addNewBackgroundTiles() {
   if (backgroundTiles.length < 3) {
     currentBackgroundTilePosition += 839;
     let bgLoop = createSprite(
-      currentBackgroundTilePosition,
+      currentBackgroundTilePosition * 1.08,
       height / 2,
       width,
       height
     );
     bgLoop.addAnimation("bg", gameBackground);
     bgLoop.depth = -1;
+    bgLoop.velocity.x = runnerSpeed / 12;
+    console.log(bgLoop.velocity.x);
+
     backgroundTiles.add(bgLoop);
   }
 }
