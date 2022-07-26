@@ -38,7 +38,6 @@ var platform1132,
   platform537,
   platform747,
   transparentBin;
-
 var currentPlatformLocation = 0;
 var index;
 var random;
@@ -47,6 +46,7 @@ var distance = [200, 500, 800, 1100, 1500];
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
 
+// Preload  the animations
 function preload() {
   jumpingAnimation = loadAnimation(
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/jump00.png",
@@ -170,12 +170,9 @@ function setup() {
 function draw() {
   if (!gameOver) {
     background(200);
-    // animation(sparkleAnimation, 200, 200);
-
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
-
     runner.overlap(binGroup, hitBin);
     runner.overlap(coinGroup, collectCoin);
 
@@ -209,256 +206,7 @@ function draw() {
   addNewPlatforms();
 }
 
-function isGameOver() {
-  gameOver = !gameOver;
-}
-
-function muteGame() {
-  musicOn = !musicOn;
-  if (musicOn) {
-    gameMusic.setVolume(1);
-  } else {
-    gameMusic.setVolume(0);
-    gameOverMusic.setVolume(0);
-  }
-}
-
-function updateScore() {
-  if (frameCount % 60 === 0) {
-    // playerScore++;
-    increaseRunnerSpeed();
-  }
-
-  fill("white");
-  textFont(gameFont);
-  strokeWeight(2);
-  stroke("black");
-  textSize(20);
-  textAlign(CENTER);
-  text(playerScore, camera.position.x + 350, camera.position.y + 160);
-}
-
-function updateLives() {
-  fill("white");
-  textFont(gameFont);
-  strokeWeight(2);
-  stroke("black");
-  textSize(20);
-  textAlign(CENTER);
-  image(heart, camera.position.x + 300, camera.position.y - 150);
-  text(playerLives, camera.position.x + 360, camera.position.y - 125);
-}
-
-function increaseRunnerSpeed() {
-  runnerSpeed += 0.2;
-  waterHeight-=1;
-}
-
-function fallCheck() {
-  if (runner.position.y > height) {
-    gameOver = true;
-    gameMusic.stop();
-    if (musicOn) {
-      gameOverMusic.play();
-    }
-  }
-}
-
-function gameOverText() {
-  background(0, 0, 0, 10);
-  fill("white");
-  stroke("black");
-  textAlign(CENTER);
-  textFont(gameFont);
-  strokeWeight(2);
-  textSize(90);
-  strokeWeight(10);
-  text("GAME OVER", camera.position.x, camera.position.y);
-  textSize(15);
-  text("Press space to try again", camera.position.x, camera.position.y + 100);
-  textSize(20);
-  text(
-    "You scored " + playerScore + " points!",
-    camera.position.x,
-    camera.position.y + 50
-  );
-}
-
-function hitBin(runner, bin) {
-  runner.changeAnimation("flash");
-  isFlashing = true;
-
-  runnerSpeed *= 0.5;
-  setTimeout(function () {
-    isFlashing = false;
-    setInterval(() => {
-      (runnerSpeed / 50) * 100;
-    }, 100);
-
-    runnerSpeed = (runnerSpeed / 50) * 100;
-  }, 1000);
-
-  bin.remove();
-
-  playerLives--;
-
-  if (playerLives === -1) {
-    gameOver = true;
-  }
-}
-
-function addNewBackgroundTiles() {
-  let bgLoop;
-  if (backgroundTiles.length < 3) {
-    
-    currentBackgroundTilePosition += 839;
-
-    if(currentBackgroundTilePosition <=838){
-  bgLoop = createSprite(
-      currentBackgroundTilePosition ,
-      height / 2,
-      width,
-      height
-    );
-    }else {
-     bgLoop = createSprite(
-      currentBackgroundTilePosition  ,
-      height / 2,
-      width,
-      height
-    );
-    }
-    bgLoop.addAnimation("bg", gameBackground);
-    bgLoop.depth = -1;
-    bgLoop.velocity.x = runnerSpeed / 12;
-  
-
-    backgroundTiles.add(bgLoop);
-  }
-}
-function addWaterToGroup() {
-  let waterLoop;
-  if (waterGroup.length < 7) {    
-    currentWaterTilePosition += 260;    
-    waterLoop = createSprite(
-      currentWaterTilePosition  ,
-     waterHeight,
-      width,
-      height
-    );    
-    waterLoop.addAnimation("water", water);
-    waterLoop.depth = 5;
-    waterGroup.add(waterLoop);
-  
- 
-  }
-}
-
-function removeWaterFromGroup() {
-  for (let i = 0; i < waterGroup.length; i++) {
-    if (waterGroup[i].position.x < runner.position.x - width) {
-      waterGroup[i].remove();
-    }
-  }
-}
-
-function binIndex() {
-  return Math.random() * 500;
-}
-
-function addBinToGroup() {
-  if (binGroup.length < 2) {
-    let newBin = createSprite(
-      currentPlatformLocation - binIndex(),
-      150,
-      10,
-      10
-    );
-
-    newBin.addAnimation("bin", transparentBin);
-    newBin.depth = 4;
-    newBin.setCollider("rectangle", 0, 0, 10, 41);
-    newBin.velocity.y += gravity + 5;
-    binGroup.add(newBin);
-  }
-}
-function removeOldBins() {
-  for (let i = 0; i < binGroup.length; i++) {
-    if (binGroup[i].position.x < runner.position.x - 3000) {
-      binGroup[i].remove();
-    }
-  }
-}
-
-function coinIndex() {
-  return Math.random() * 3000;
-}
-
-function addCoinToGroup() {
-  if (coinGroup.length < 15) {
-    let newCoin = createSprite(
-      currentPlatformLocation - coinIndex(),
-      random(100, 200),
-      10,
-      10
-    );
-    newCoin.addAnimation("coin", solar);
-    newCoin.addAnimation("sparkle", sparkleAnimation);
-    newCoin.depth = 4;
-    newCoin.setCollider("rectangle", 0, 0, 10, 41);
-    newCoin.velocity.y = 0;
-    newCoin.velocity.x = 0;
-    coinGroup.add(newCoin);
-  }
-}
-
-function collectCoin(runner, coin) {
-  console.log(sparkleAnimation);
-  coin.changeAnimation("sparkle");
-  coin.rotationSpeed = random(-20, 20);
-  playerScore += 1;
-  waterHeight+=0.5;
-}
-
-function removeCoins() {
-  for (let i = 0; i < coinGroup.length; i++) {
-    if (coinGroup[i].position.x < runner.position.x - 1500) {
-      coinGroup[i].remove();
-    }
-  }
-}
-
-function removeOldBackgroundTiles() {
-  for (let i = 0; i < backgroundTiles.length; i++) {
-    if (backgroundTiles[i].position.x < runner.position.x - width) {
-      backgroundTiles[i].remove();
-    }
-  }
-}
-
-function removeOldPlatforms() {
-  for (let i = 0; i < platformsGroup.length; i++) {
-    if (platformsGroup[i].position.x < runner.position.x - 1500) {
-      platformsGroup[i].remove();
-    }
-  }
-}
-
-function runnerFlash() {
-  runner.changeAnimation("flash");
-}
-
-function randomIndex() {
-  if (switchBool) {
-    switchBool = !switchBool;
-    return 4;
-  } else {
-    var milliseconds = new Date().getMilliseconds();
-    let index = Math.floor((milliseconds * 7) / 1000);
-
-    return index;
-  }
-}
+//****************Platforms************************
 
 // currentPlatformLength to increase/decrease distance END of platforms
 // currentPlatformLocation to increase/decrease distance START platforms
@@ -556,6 +304,193 @@ function addNewPlatforms() {
   }
 }
 
+function removeOldPlatforms() {
+  for (let i = 0; i < platformsGroup.length; i++) {
+    if (platformsGroup[i].position.x < runner.position.x - 1500) {
+      platformsGroup[i].remove();
+    }
+  }
+}
+
+//*************************Background ****************
+
+function addNewBackgroundTiles() {
+  let bgLoop;
+  if (backgroundTiles.length < 3) {
+    
+    currentBackgroundTilePosition += 839;
+
+    if(currentBackgroundTilePosition <=838){
+  bgLoop = createSprite(
+      currentBackgroundTilePosition ,
+      height / 2,
+      width,
+      height
+    );
+    }else {
+     bgLoop = createSprite(
+      currentBackgroundTilePosition  ,
+      height / 2,
+      width,
+      height
+    );
+    }
+    bgLoop.addAnimation("bg", gameBackground);
+    bgLoop.depth = -1;
+    bgLoop.velocity.x = runnerSpeed / 12;
+  
+
+    backgroundTiles.add(bgLoop);
+  }
+}
+
+function removeOldBackgroundTiles() {
+  for (let i = 0; i < backgroundTiles.length; i++) {
+    if (backgroundTiles[i].position.x < runner.position.x - width) {
+      backgroundTiles[i].remove();
+    }
+  }
+}
+
+//******************Bins**********************
+function addBinToGroup() {
+  if (binGroup.length < 2) {
+    let newBin = createSprite(
+      currentPlatformLocation - binIndex(),
+      150,
+      10,
+      10
+    );
+
+    newBin.addAnimation("bin", transparentBin);
+    newBin.depth = 4;
+    newBin.setCollider("rectangle", 0, 0, 10, 41);
+    newBin.velocity.y += gravity + 5;
+    binGroup.add(newBin);
+  }
+}
+function removeOldBins() {
+  for (let i = 0; i < binGroup.length; i++) {
+    if (binGroup[i].position.x < runner.position.x - 3000) {
+      binGroup[i].remove();
+    }
+  }
+}
+
+
+function binIndex() {
+  return Math.random() * 500;
+}
+
+function hitBin(runner, bin) {
+  runner.changeAnimation("flash");
+  isFlashing = true;
+
+  runnerSpeed *= 0.5;
+  setTimeout(function () {
+    isFlashing = false;
+    setInterval(() => {
+      (runnerSpeed / 50) * 100;
+    }, 100);
+
+    runnerSpeed = (runnerSpeed / 50) * 100;
+  }, 1000);
+
+  bin.remove();
+
+  playerLives--;
+
+  if (playerLives === -1) {
+    gameOver = true;
+  }
+}
+
+//  *************************Water*****************
+function addWaterToGroup() {
+  let waterLoop;
+  if (waterGroup.length < 7) {    
+    currentWaterTilePosition += 260;    
+    waterLoop = createSprite(
+      currentWaterTilePosition  ,
+     waterHeight,
+      width,
+      height
+    );    
+    waterLoop.addAnimation("water", water);
+    waterLoop.depth = 5;
+    waterGroup.add(waterLoop);
+  
+ 
+  }
+}
+
+function removeWaterFromGroup() {
+  for (let i = 0; i < waterGroup.length; i++) {
+    if (waterGroup[i].position.x < runner.position.x - width) {
+      waterGroup[i].remove();
+    }
+  }
+}
+
+//************************Coins ******************** */
+
+function coinIndex() {
+  return Math.random() * 3000;
+}
+
+function addCoinToGroup() {
+  if (coinGroup.length < 15) {
+    let newCoin = createSprite(
+      currentPlatformLocation - coinIndex(),
+      random(50, 150),
+      10,
+      10
+    );
+    newCoin.addAnimation("coin", solar);
+    newCoin.addAnimation("sparkle", sparkleAnimation);
+    newCoin.depth = 4;
+    newCoin.setCollider("rectangle", 0, 0, 10, 41);
+    newCoin.velocity.y = 0;
+    newCoin.velocity.x = 0;
+    coinGroup.add(newCoin);
+  }
+}
+
+function collectCoin(runner, coin) {
+  console.log(sparkleAnimation);
+  coin.changeAnimation("sparkle");
+  coin.rotationSpeed = random(-20, 20);
+  playerScore += 1;
+  waterHeight+=0.5;
+}
+
+function removeCoins() {
+  for (let i = 0; i < coinGroup.length; i++) {
+    if (coinGroup[i].position.x < runner.position.x - 1500) {
+      coinGroup[i].remove();
+    }
+  }
+}
+
+// ************* Runner Functions***************
+
+function runnerFlash() {
+  runner.changeAnimation("flash");
+}
+
+function randomIndex() {
+  if (switchBool) {
+    switchBool = !switchBool;
+    return 4;
+  } else {
+    var milliseconds = new Date().getMilliseconds();
+    let index = Math.floor((milliseconds * 7) / 1000);
+
+    return index;
+  }
+}
+
+
 function solidGround() {
   runner.velocity.y = 0;
   if (!isFlashing) {
@@ -583,11 +518,93 @@ function jumpDetection() {
   }
 }
 
+
+// *****************Single functionallity function **********
+function muteGame() {
+  musicOn = !musicOn;
+  if (musicOn) {
+    gameMusic.setVolume(1);
+  } else {
+    gameMusic.setVolume(0);
+    gameOverMusic.setVolume(0);
+  }
+}
+
+function isGameOver() {
+  gameOver = !gameOver;
+}
+
+
+function updateScore() {
+  if (frameCount % 60 === 0) {
+    // playerScore++;
+    increaseRunnerSpeed();
+  }
+
+  fill("white");
+  textFont(gameFont);
+  strokeWeight(2);
+  stroke("black");
+  textSize(20);
+  textAlign(CENTER);
+  text(playerScore, camera.position.x + 350, camera.position.y + 160);
+}
+
+function updateLives() {
+  fill("white");
+  textFont(gameFont);
+  strokeWeight(2);
+  stroke("black");
+  textSize(20);
+  textAlign(CENTER);
+  image(heart, camera.position.x + 300, camera.position.y - 150);
+  text(playerLives, camera.position.x + 360, camera.position.y - 125);
+}
+
+function increaseRunnerSpeed() {
+  runnerSpeed += 0.2;
+  waterHeight-=1;
+}
+
+function fallCheck() {
+  if (runner.position.y > height) {
+    gameOver = true;
+    gameMusic.stop();
+    if (musicOn) {
+      gameOverMusic.play();
+    }
+  }
+}
+
+
+// **********************Game over *********************
+function gameOverText() {
+  background(0, 0, 0, 10);
+  fill("white");
+  stroke("black");
+  textAlign(CENTER);
+  textFont(gameFont);
+  strokeWeight(2);
+  textSize(90);
+  strokeWeight(10);
+  text("GAME OVER", camera.position.x, camera.position.y);
+  textSize(15);
+  text("Press space to try again", camera.position.x, camera.position.y + 100);
+  textSize(20);
+  text(
+    "You scored " + playerScore + " points!",
+    camera.position.x,
+    camera.position.y + 50
+  );
+}
+
 function newGame() {
   firstPlatform = true;
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
   coinGroup.removeSprites();
+  waterGroup.removeSprites()
+  waterHeight=450;
   playerLives = 3;
 
   binGroup.removeSprites();
@@ -603,6 +620,7 @@ function newGame() {
 
   currentPlatformLocation = 0;
   currentBackgroundTilePosition = -width;
+  currentWaterTilePosition = -width;
   gameOverMusic.stop();
   if (musicOn) {
     gameMusic.play();
