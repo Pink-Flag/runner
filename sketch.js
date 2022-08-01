@@ -9,6 +9,7 @@ var gameFont;
 var gameMusic;
 var gameOverMusic;
 var jumpSound;
+var coinCount = 0;
 var gameOver = false;
 var platformsGroup;
 var solar;
@@ -21,6 +22,7 @@ var backgroundTiles;
 var playerScore = 0;
 var playerLives = 3;
 var binGroup;
+var currentWaterHeight;
 var sparkleSpriteSheet;
 var sparkleAnimation;
 var water;
@@ -186,7 +188,7 @@ function draw() {
     addNewBackgroundTiles();
     removeOldBackgroundTiles();
     removeOldBins();
-    // addBinToGroup();
+    addBinToGroup();
     addCoinToGroup();
     removeCoins();
     addWaterToGroup();
@@ -194,7 +196,9 @@ function draw() {
     fallCheck();
     drawSprites();
     updateScore();
-    updateLives();
+    // updateLives();
+    updateCoins();
+    console.log(currentWaterHeight);
     binGroup.collide(platformsGroup);
   }
   if (gameOver) {
@@ -382,26 +386,25 @@ function binIndex() {
 }
 
 function hitBin(runner, bin) {
-  runner.changeAnimation("flash");
-  isFlashing = true;
+  currentWaterHeight = waterHeight;
 
-  runnerSpeed *= 0.5;
-  setTimeout(function () {
-    isFlashing = false;
-    setInterval(() => {
-      (runnerSpeed / 50) * 100;
-    }, 100);
+  // let interval = 100 * coinCount;
 
-    runnerSpeed = (runnerSpeed / 50) * 100;
-  }, 1000);
+  let waterReduce = setInterval(() => {
+    waterGroup.forEach((element) => {
+      element.position.y += 1;
+    });
+    waterHeight += 1;
+
+    if (waterHeight === currentWaterHeight + coinCount) {
+      clearInterval(waterReduce);
+    }
+    if (waterHeight === 450) {
+      clearInterval(waterReduce);
+    }
+  }, 100);
 
   bin.remove();
-
-  playerLives--;
-
-  if (playerLives === -1) {
-    gameOver = true;
-  }
 }
 
 //  *************************Water*****************
@@ -463,12 +466,14 @@ function addCoinToGroup() {
 }
 
 function collectCoin(runner, coin) {
-  console.log(sparkleAnimation);
   coin.changeAnimation("sparkle");
-  coinSound.play();
+
+  if (musicOn) {
+    coinSound.play();
+  }
   coin.rotationSpeed = random(-20, 20);
-  playerScore += 1;
-  waterHeight += 0.5;
+  coinCount += 1;
+  // waterHeight += 0.5;
 }
 
 function removeCoins() {
@@ -477,6 +482,17 @@ function removeCoins() {
       coinGroup[i].remove();
     }
   }
+}
+
+function updateCoins() {
+  fill("white");
+  textFont(gameFont);
+  strokeWeight(2);
+  stroke("black");
+  textSize(20);
+  textAlign(CENTER);
+  image(solar, camera.position.x + 300, camera.position.y - 150);
+  text(coinCount, camera.position.x + 360, camera.position.y - 125);
 }
 
 // ************* Runner Functions***************
@@ -510,8 +526,8 @@ function solidGround() {
 
 function jumpDetection() {
   if (
-    keyWentDown(UP_ARROW) &&
-    (runner.velocity.y === 0 || runner.velocity.y === 1)
+    keyWentDown(UP_ARROW)
+    // (runner.velocity.y === 0 || runner.velocity.y === 1)
   ) {
     if (!isFlashing) {
       runner.changeAnimation("jump");
@@ -532,6 +548,7 @@ function muteGame() {
   } else {
     gameMusic.setVolume(0);
     gameOverMusic.setVolume(0);
+    coinSound.setVolume(0);
   }
 }
 
@@ -620,6 +637,7 @@ function newGame() {
   runner.position.x = 50;
   runner.position.y = 100;
   runner.velocity.x = runnerSpeed;
+  coinCount = 0;
 
   currentPlatformLocation = 0;
   currentBackgroundTilePosition = -width;
@@ -629,3 +647,21 @@ function newGame() {
     gameMusic.play();
   }
 }
+
+// runner.changeAnimation("flash");
+// isFlashing = true;
+
+// runnerSpeed *= 0.5;
+// setTimeout(function () {
+//   isFlashing = false;
+//   setInterval(() => {
+//     (runnerSpeed / 50) * 100;
+//   }, 100);
+
+//   runnerSpeed = (runnerSpeed / 50) * 100;
+// }, 1000);
+// playerLives--;
+
+// if (playerLives === -1) {
+//   gameOver = true;
+// }
