@@ -42,6 +42,10 @@ var add;
 var currentCoinCount;
 var waterReduce;
 var bottle;
+var checkGameOverText = false;
+var gameOverTimeout;
+var newGameBool = false;
+var currentPlatformHeight;
 
 var platform1132,
   platform1587,
@@ -181,8 +185,8 @@ function setup() {
   createCanvas(width, height);
   switchBool = true;
   gameMusic.play();
-
   index = 0;
+
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
@@ -204,15 +208,23 @@ function setup() {
 function draw() {
   if (!gameOver) {
     background(200);
+    runner.depth = 4;
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
+    runner.collide(waterGroup, wetGround);
     runner.overlap(binGroup, hitBin);
+    runner.overlap(platformsGroup, hitPlatform);
     runner.overlap(coinGroup, collectCoin);
     addNewPlatforms();
     jumpDetection();
     if (!hasFallen) {
       camera.position.x = runner.position.x + 300;
+    }
+    if (newGameBool) {
+      setTimeout(() => {
+        newGameBool = false;
+      }, 1000);
     }
     removeOldPlatforms();
     addNewBackgroundTiles();
@@ -226,16 +238,29 @@ function draw() {
     fallCheck();
     drawSprites();
     updateScore();
+    console.log(currentPlatformHeight);
     // updateLives();
     updateCoins();
     binGroup.collide(platformsGroup);
   }
-  if (gameOver) {
+  if (checkGameOverText) {
+    bigGameOverText();
+
+    if (keyWentDown("space")) {
+      newGame();
+      // clearTimeout(gameOverTimeout);
+
+      firstPlatform = true;
+    }
+  }
+  if (checkGameOverText && gameOver) {
     gameOverText();
+    bigGameOverText();
+    splashAnimation.frameDelay = 5000;
     updateSprites(false);
     if (keyWentDown("space")) {
-      firstPlatform = true;
       newGame();
+      firstPlatform = true;
     }
   }
   addNewPlatforms();
@@ -419,6 +444,10 @@ function binIndex() {
   return Math.random() * 500;
 }
 
+function hitPlatform(runner, platform) {
+  currentPlatformHeight = platform.position.y;
+}
+
 function hitBin(runner, bin) {
   currentWaterHeight = waterHeight;
   currentCoinCount = coinCount;
@@ -471,6 +500,7 @@ function addWaterToGroup() {
       height
     );
     waterLoop.addAnimation("water", water);
+    waterLoop.collide(runner);
     waterLoop.depth = 5;
     // waterLoop.velocity.x = -1;
     waterGroup.add(waterLoop);
@@ -602,6 +632,17 @@ function solidGround() {
   }
 }
 
+function wetGround() {
+  runner.velocity.y = 0;
+  runner.velocity.x = 0;
+  runnerSpeed = 0;
+
+  if (runner.touching.right) {
+    runner.velocity.x = 0;
+    runner.velocity.y += 30;
+  }
+}
+
 function jumpDetection() {
   if (
     keyWentDown(UP_ARROW)
@@ -662,29 +703,31 @@ function updateLives() {
 
 function increaseRunnerSpeed() {
   runnerSpeed += 0.1;
-  waterHeight -= 1;
+  waterHeight -= 10;
 }
 
 function fallCheck() {
-  if (runner.position.y > waterHeight - 130) {
+  if (runner.position.y > waterHeight - 100) {
     runner.changeAnimation("splash");
+
     hasFallen = true;
-    setTimeout(() => {
-      gameOver = true;
-      gameMusic.stop();
-      if (musicOn) {
-        gameOverMusic.play();
+    runner.depth = 0;
+    checkGameOverText = true;
+    gameOverTimeout = setTimeout(() => {
+      if (!newGameBool) {
+        gameOver = true;
+        gameMusic.stop();
+
+        if (musicOn) {
+          gameOverMusic.play();
+        }
       }
     }, 1000);
   }
 }
 
 // **********************Game over *********************
-function gameOverText() {
-  runnerSpeed = 0;
-  setTimeout(() => {
-    background(0, 0, 0, 10);
-  }, 1000);
+function bigGameOverText() {
   fill("white");
   stroke("black");
   textAlign(CENTER);
@@ -692,7 +735,20 @@ function gameOverText() {
   strokeWeight(2);
   textSize(90);
   strokeWeight(10);
+
   text("GAME OVER", camera.position.x, camera.position.y);
+}
+
+function gameOverText() {
+  runnerSpeed = 0;
+
+  background(0, 0, 0, 10);
+
+  fill("white");
+  stroke("black");
+  textAlign(CENTER);
+  textFont(gameFont);
+  strokeWeight(2);
   textSize(15);
   text("Press space to try again", camera.position.x, camera.position.y + 100);
   textSize(20);
@@ -705,6 +761,7 @@ function gameOverText() {
 
 function newGame() {
   firstPlatform = true;
+  runner.changeAnimation("run");
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
   coinGroup.removeSprites();
@@ -715,6 +772,8 @@ function newGame() {
   switchBool = true;
   index = 0;
   gameOver = false;
+  newGameBool = true;
+  checkGameOverText = false;
   hasFallen = false;
   playerScore = 0;
   updateSprites(true);
@@ -722,6 +781,7 @@ function newGame() {
   runner.position.x = 50;
   runner.position.y = 100;
   runner.velocity.x = runnerSpeed;
+
   coinCount = 0;
   currentPlatformLocation = 0;
   currentBackgroundTilePosition = -width;
