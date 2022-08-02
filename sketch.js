@@ -5,9 +5,11 @@ var jumpingAnimation;
 var flashingAnimation;
 var gameBackground;
 var platformBackground;
+var splashAnimation;
 var gameFont;
 var gameMusic;
 var gameOverMusic;
+var hasFallen = false;
 var jumpSound;
 var coinCount = 0;
 var gameOver = false;
@@ -39,6 +41,7 @@ var coinGroup;
 var add;
 var currentCoinCount;
 var waterReduce;
+var bottle;
 
 var platform1132,
   platform1587,
@@ -76,6 +79,24 @@ function preload() {
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run05.png",
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run06.png",
     "https://la-wit.github.io/build-an-infinite-runner/build/images/sprites/puppy/run07.png"
+  );
+
+  splashAnimation = loadAnimation(
+    "./Images/splash/splash.png",
+    "./Images/splash/splash2.png",
+    "./Images/splash/splash3.png",
+    "./Images/splash/splash4.png",
+    "./Images/splash/splash5.png",
+    "./Images/splash/splash6.png",
+    "./Images/splash/splash7.png",
+    "./Images/splash/splash8.png",
+    "./Images/splash/splash9.png",
+    "./Images/splash/splash10.png",
+    "./Images/splash/splash11.png",
+    "./Images/splash/splash12.png",
+    "./Images/splash/splash13.png",
+    "./Images/splash/splash14.png",
+    "./Images/splash/splash15.png"
   );
 
   flashingAnimation = loadAnimation(
@@ -151,6 +172,7 @@ function preload() {
   transparentBin = loadImage("./Images/transparentBin.png");
   heart = loadImage("./Images/heart.png");
   solar = loadImage("./Images/solar.png");
+  bottle = loadImage("./Images/smallBottle.png");
   water = loadAnimation("./Images/water.png");
   coinSound = loadSound("./Images/coinSound.mp3");
 }
@@ -167,6 +189,8 @@ function setup() {
   runner.addAnimation("run", runningAnimation);
   runner.setCollider("rectangle", -5, 0, 10, 41);
   runner.addAnimation("flash", flashingAnimation);
+  // runner.addAnimation("sparkle", sparkleAnimation);
+  runner.addAnimation("splash", splashAnimation);
   waterGroup = new Group();
   platformsGroup = new Group();
   binGroup = new Group();
@@ -185,11 +209,11 @@ function draw() {
     runner.collide(platformsGroup, solidGround);
     runner.overlap(binGroup, hitBin);
     runner.overlap(coinGroup, collectCoin);
-
     addNewPlatforms();
     jumpDetection();
-    // waves();
-    camera.position.x = runner.position.x + 300;
+    if (!hasFallen) {
+      camera.position.x = runner.position.x + 300;
+    }
     removeOldPlatforms();
     addNewBackgroundTiles();
     removeOldBackgroundTiles();
@@ -204,10 +228,7 @@ function draw() {
     updateScore();
     // updateLives();
     updateCoins();
-    console.log(waterHeight);
-
     binGroup.collide(platformsGroup);
-    // throwCoinGroup.collide(binGroup, coinBin);
   }
   if (gameOver) {
     gameOverText();
@@ -335,7 +356,7 @@ function removeOldPlatforms() {
 
 function addNewBackgroundTiles() {
   let bgLoop;
-  if (backgroundTiles.length < 3) {
+  if (backgroundTiles.length < 5) {
     currentBackgroundTilePosition += 839;
 
     if (currentBackgroundTilePosition <= 838) {
@@ -425,15 +446,15 @@ function hitBin(runner, bin) {
       coinCount = 0;
     }
   }, 50);
-  
+
   let bendCoins = setInterval(() => {
     throwCoinGroup.forEach((element) => {
-      element.velocity.y += 1;
+      element.position.y += 5;
     });
-    if(throwCoinGroup.length === 0){
-      clearInterval(bendCoins)
+    if (throwCoinGroup.length === 0) {
+      clearInterval(bendCoins);
     }
-  }, 100);
+  }, 10);
 
   bin.remove();
 }
@@ -486,7 +507,7 @@ function addCoinToGroup() {
       10,
       10
     );
-    newCoin.addAnimation("coin", solar);
+    newCoin.addAnimation("bottle", bottle);
     newCoin.addAnimation("sparkle", sparkleAnimation);
     newCoin.depth = 4;
     newCoin.setCollider("rectangle", 0, 0, 10, 41);
@@ -498,8 +519,13 @@ function addCoinToGroup() {
 
 function addThrowCoinGroup() {
   let coinInterval = setInterval(() => {
-    let newCoin = createSprite(camera.position.x + 300, camera.position.y - 150, 10, 10);
-    newCoin.addAnimation("coin", solar);
+    let newCoin = createSprite(
+      camera.position.x + 350,
+      camera.position.y - 135,
+      10,
+      10
+    );
+    newCoin.addAnimation("bottle", bottle);
     newCoin.addAnimation("sparkles", sparkleAnimation);
 
     newCoin.depth = 4;
@@ -543,7 +569,7 @@ function updateCoins() {
   stroke("black");
   textSize(20);
   textAlign(CENTER);
-  image(solar, camera.position.x + 300, camera.position.y - 150);
+  image(bottle, camera.position.x + 300, camera.position.y - 160);
   text(coinCount, camera.position.x + 360, camera.position.y - 125);
 }
 
@@ -640,18 +666,25 @@ function increaseRunnerSpeed() {
 }
 
 function fallCheck() {
-  if (runner.position.y > height) {
-    gameOver = true;
-    gameMusic.stop();
-    if (musicOn) {
-      gameOverMusic.play();
-    }
+  if (runner.position.y > waterHeight - 130) {
+    runner.changeAnimation("splash");
+    hasFallen = true;
+    setTimeout(() => {
+      gameOver = true;
+      gameMusic.stop();
+      if (musicOn) {
+        gameOverMusic.play();
+      }
+    }, 1000);
   }
 }
 
 // **********************Game over *********************
 function gameOverText() {
-  background(0, 0, 0, 10);
+  runnerSpeed = 0;
+  setTimeout(() => {
+    background(0, 0, 0, 10);
+  }, 1000);
   fill("white");
   stroke("black");
   textAlign(CENTER);
@@ -678,11 +711,11 @@ function newGame() {
   waterGroup.removeSprites();
   waterHeight = 450;
   playerLives = 3;
-
   binGroup.removeSprites();
   switchBool = true;
   index = 0;
   gameOver = false;
+  hasFallen = false;
   playerScore = 0;
   updateSprites(true);
   runnerSpeed = 12;
@@ -690,7 +723,6 @@ function newGame() {
   runner.position.y = 100;
   runner.velocity.x = runnerSpeed;
   coinCount = 0;
-
   currentPlatformLocation = 0;
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
