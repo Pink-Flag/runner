@@ -425,6 +425,15 @@ function hitBin(runner, bin) {
       coinCount = 0;
     }
   }, 50);
+  
+  let bendCoins = setInterval(() => {
+    throwCoinGroup.forEach((element) => {
+      element.velocity.y += 1;
+    });
+    if(throwCoinGroup.length === 0){
+      clearInterval(bendCoins)
+    }
+  }, 100);
 
   bin.remove();
 }
@@ -489,14 +498,14 @@ function addCoinToGroup() {
 
 function addThrowCoinGroup() {
   let coinInterval = setInterval(() => {
-    let newCoin = createSprite(runner.position.x, runner.position.y, 10, 10);
+    let newCoin = createSprite(camera.position.x + 300, camera.position.y - 150, 10, 10);
     newCoin.addAnimation("coin", solar);
     newCoin.addAnimation("sparkles", sparkleAnimation);
 
     newCoin.depth = 4;
     newCoin.setCollider("rectangle", 0, 0, 10, 41);
     newCoin.velocity.y = 2;
-    newCoin.velocity.x = -3;
+    newCoin.velocity.x = -20;
     throwCoinGroup.add(newCoin);
 
     if (throwCoinGroup.length >= currentCoinCount) {
@@ -505,7 +514,7 @@ function addThrowCoinGroup() {
         throwCoinGroup.removeSprites();
       }, 5000);
     }
-  }, 50);
+  }, 10);
 }
 
 function collectCoin(runner, coin) {
