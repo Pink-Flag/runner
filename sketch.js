@@ -30,7 +30,7 @@ var sparkleAnimation;
 var water;
 var throwCoinGroup;
 var currentWaterTilePosition;
-var waterHeight = 450;
+var waterHeight = 500;
 const height = 390;
 const width = 840;
 let musicOn = true;
@@ -46,6 +46,10 @@ var checkGameOverText = false;
 var gameOverTimeout;
 var newGameBool = false;
 var currentPlatformHeight;
+var drowned = false;
+var waterAxisX;
+var waterAxisY;
+var hasDrowned = false;
 
 var platform1132,
   platform1587,
@@ -212,7 +216,7 @@ function draw() {
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
-    runner.collide(waterGroup, wetGround);
+    runner.overlap(waterGroup, wetGround);
     runner.overlap(binGroup, hitBin);
     runner.overlap(platformsGroup, hitPlatform);
     runner.overlap(coinGroup, collectCoin);
@@ -238,7 +242,7 @@ function draw() {
     fallCheck();
     drawSprites();
     updateScore();
-    console.log(currentPlatformHeight);
+
     // updateLives();
     updateCoins();
     binGroup.collide(platformsGroup);
@@ -627,15 +631,20 @@ function solidGround() {
     runner.changeAnimation("run");
   }
   if (runner.touching.right) {
-    runner.velocity.x = 0;
+    console.log("touchgin rifht");
+    runner.velocity.x = -15;
     runner.velocity.y += 30;
   }
 }
 
-function wetGround() {
-  runner.velocity.y = 0;
-  runner.velocity.x = 0;
-  runnerSpeed = 0;
+function wetGround(runner, water) {
+  waterAxisX = water.position.x;
+  waterAxisY = water.position.y;
+  if (drowned) {
+    runner.velocity.y = 0;
+    runner.velocity.x = 0;
+    runnerSpeed = 0;
+  }
 
   if (runner.touching.right) {
     runner.velocity.x = 0;
@@ -707,9 +716,30 @@ function increaseRunnerSpeed() {
 }
 
 function fallCheck() {
-  if (runner.position.y > waterHeight - 100) {
-    runner.changeAnimation("splash");
-
+  console.log(runner.position.y);
+  if (
+    (runner.position.y > waterHeight - 160 &&
+      waterHeight > currentPlatformHeight) ||
+    runner.position.y > 450
+  ) {
+    if (runner.position.y > 430) {
+      if (!hasDrowned) {
+        runner.changeAnimation("splash");
+        runner.velocity.x = -10;
+        runner.velocity.y = 0;
+        runner.position.x = waterAxisX + 50;
+        runner.position.y -= 250;
+        hasDrowned = true;
+        console.log("am i?");
+      }
+    } else {
+      if (!hasDrowned) {
+        runner.position.y -= 50;
+        hasDrowned = true;
+        runner.changeAnimation("splash");
+      }
+    }
+    drowned = true;
     hasFallen = true;
     runner.depth = 0;
     checkGameOverText = true;
@@ -760,13 +790,17 @@ function gameOverText() {
 }
 
 function newGame() {
+  hasDrowned = false;
+  drowned = false;
+  waterAxisX = 0;
+  waterAxisY = 0;
   firstPlatform = true;
   runner.changeAnimation("run");
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
   coinGroup.removeSprites();
   waterGroup.removeSprites();
-  waterHeight = 450;
+  waterHeight = 500;
   playerLives = 3;
   binGroup.removeSprites();
   switchBool = true;
