@@ -41,7 +41,7 @@ var bin;
 var coinGroup;
 var add;
 var currentCoinCount;
-var waterReduce;
+
 var bottle;
 var checkGameOverText = false;
 var gameOverTimeout;
@@ -227,7 +227,8 @@ function draw() {
     }
 
     if (runner.position.y < 200) {
-      let difference = (camera.position.y - runner.position.y) / 2;
+      let difference = (camera.position.y - runner.position.y) / 1.5;
+
       camera.position.y = runner.position.y - difference;
     }
 
@@ -461,10 +462,10 @@ function hitPlatform(runner, platform) {
 function hitBin(runner, bin) {
   currentWaterHeight = waterHeight;
   currentCoinCount = coinCount;
-  coinReset = 0
+  coinReset = 0;
   addThrowCoinGroup();
 
-  waterReduce = setInterval(() => {
+  let waterReduce = setInterval(() => {
     waterGroup.forEach((element) => {
       element.position.y += 1;
     });
@@ -474,11 +475,10 @@ function hitBin(runner, bin) {
       clearInterval(waterReduce);
     }
     if (waterHeight === 500) {
+      waterHeight = 499;
       clearInterval(waterReduce);
     }
-    if (waterHeight > 500) {
-      waterHeight = 500;
-    }
+    return;
   }, 100);
 
   let coinReduce = setInterval(() => {
@@ -587,16 +587,16 @@ function addThrowCoinGroup() {
 }
 
 function collectCoin(runner, coin) {
-  if (coinCount < 10) {
+  if (coinCount < 25) {
     coin.changeAnimation("sparkle");
 
     if (musicOn) {
       coinSound.play();
     }
     coin.rotationSpeed = random(-20, 20);
-    coinReset+=1
+    coinReset += 1;
     coinCount += 1;
-  }else{
+  } else {
     ///animation
   }
 }
@@ -639,25 +639,23 @@ function randomIndex() {
 }
 
 function solidGround() {
-  // camera.position.y = 195;
-  //   let moveCamera;
-  //  do {
-  //     moveCamera = setInterval(() => {
-  //       camera.position.y++;
-  //       console.log("Active");
-  //     }, 1000);
-  //   }
-  //   while(camera.position.y < 195)
-  //   // if (camera.position.y > 195) {
-  //   //   console.log("Clear");
-  //   //   clearInterval(moveCamera);
-  //   // }
+  // if (camera.position.y > 195) {
+  //   let moveCamera = setInterval(() => {
+  //     camera.position.y++;
+
+  //     if (camera.position.y > 195) {
+  //       clearInterval(moveCamera);
+  //       console.log("do i get in here");
+  //       console.log(camera.position.y, "camera");
+  //     }
+  //   }, 1);
+  // }
+
   runner.velocity.y = 0;
   if (!isFlashing) {
     runner.changeAnimation("run");
   }
   if (runner.touching.right) {
-    console.log("touchgin rifht");
     runner.velocity.x = -15;
     runner.velocity.y += 30;
   }
@@ -742,7 +740,6 @@ function increaseRunnerSpeed() {
 }
 
 function fallCheck() {
-  // console.log(runner.position.y);
   if (
     (runner.position.y > waterHeight - 160 &&
       waterHeight > currentPlatformHeight) ||
@@ -756,7 +753,6 @@ function fallCheck() {
         runner.position.x = waterAxisX + 50;
         runner.position.y -= 250;
         hasDrowned = true;
-        console.log("am i?");
       }
     } else {
       if (!hasDrowned) {
