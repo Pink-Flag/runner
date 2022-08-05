@@ -153,9 +153,8 @@ function preload() {
     "./Images/explosion/tile031.png"
   );
 
-  gameBackground = loadImage(
-    "https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultBackground.png"
-  );
+  gameBackground = loadImage("./Images/background.png");
+
   platformBackground = loadImage(
     "https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultPlatform.png"
   );
@@ -225,6 +224,12 @@ function draw() {
     if (!hasFallen) {
       camera.position.x = runner.position.x + 300;
     }
+    // console.log(runner.position.y);
+
+    if (runner.position.y < 100) {
+      camera.position.y = runner.position.y;
+    }
+    // console.log(camera.position.y);
     if (newGameBool) {
       setTimeout(() => {
         newGameBool = false;
@@ -391,7 +396,7 @@ function addNewBackgroundTiles() {
     if (currentBackgroundTilePosition <= 838) {
       bgLoop = createSprite(
         currentBackgroundTilePosition,
-        height / 2,
+        225 / 2,
         width,
         height
       );
@@ -626,6 +631,7 @@ function randomIndex() {
 }
 
 function solidGround() {
+  camera.position.y = 195;
   runner.velocity.y = 0;
   if (!isFlashing) {
     runner.changeAnimation("run");
@@ -712,7 +718,7 @@ function updateLives() {
 
 function increaseRunnerSpeed() {
   runnerSpeed += 0.1;
-  waterHeight -= 10;
+  waterHeight -= 1;
 }
 
 function fallCheck() {
