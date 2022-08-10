@@ -225,12 +225,21 @@ function draw() {
     if (!hasFallen) {
       camera.position.x = runner.position.x + 300;
     }
+    // console.log(runner.position.y);
 
-    if (runner.position.y < 200) {
-      let difference = (camera.position.y - runner.position.y) / 1.5;
+    if (runner.position.y < 80) {
+      let jumpDiff = (runner.position.y - 80) / 2;
 
-      camera.position.y = runner.position.y - difference;
+      camera.position.y = jumpDiff + 195;
     }
+
+    // if (playerScore > 1) {
+    //   if (runner.position.y < 200) {
+    //     let difference = (camera.position.y - runner.position.y) / 1.6;
+
+    //     camera.position.y = runner.position.y - difference;
+    //   }
+    // }
 
     if (newGameBool) {
       setTimeout(() => {
@@ -260,8 +269,6 @@ function draw() {
     if (keyWentDown("space")) {
       newGame();
       // clearTimeout(gameOverTimeout);
-
-      firstPlatform = true;
     }
   }
   if (checkGameOverText && gameOver) {
@@ -271,7 +278,6 @@ function draw() {
     updateSprites(false);
     if (keyWentDown("space")) {
       newGame();
-      firstPlatform = true;
     }
   }
   addNewPlatforms();
@@ -816,7 +822,7 @@ function newGame() {
   drowned = false;
   waterAxisX = 0;
   waterAxisY = 0;
-  firstPlatform = true;
+
   runner.changeAnimation("run");
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
@@ -829,6 +835,7 @@ function newGame() {
   index = 0;
   gameOver = false;
   newGameBool = true;
+  camera.position.y = 195;
   checkGameOverText = false;
   hasFallen = false;
   playerScore = 0;
