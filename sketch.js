@@ -17,7 +17,7 @@ var gameOver = false;
 var platformsGroup;
 var solar;
 var gravity = 1;
-var jumpPower = 15;
+var jumpPower = 18;
 var runnerSpeed = 10;
 var isFlashing = false;
 var currentBackgroundTilePosition;
@@ -41,7 +41,7 @@ var bin;
 var coinGroup;
 var add;
 var currentCoinCount;
-
+var bgLoop;
 var bottle;
 var checkGameOverText = false;
 var gameOverTimeout;
@@ -51,6 +51,7 @@ var drowned = false;
 var waterAxisX;
 var waterAxisY;
 var hasDrowned = false;
+var coinTime = false;
 
 var platform1132,
   platform1587,
@@ -222,24 +223,22 @@ function draw() {
     runner.overlap(coinGroup, collectCoin);
     addNewPlatforms();
     jumpDetection();
+
     if (!hasFallen) {
       camera.position.x = runner.position.x + 300;
     }
-    // console.log(runner.position.y);
 
-    if (runner.position.y < 80) {
-      let jumpDiff = (runner.position.y - 80) / 2;
+    if (coinTime) {
+      setTimeout(() => {
+        coinTime = false;
+      }, 55);
+    }
+
+    if (runner.position.y < 120) {
+      let jumpDiff = (runner.position.y - 120) / 2;
 
       camera.position.y = jumpDiff + 195;
     }
-
-    // if (playerScore > 1) {
-    //   if (runner.position.y < 200) {
-    //     let difference = (camera.position.y - runner.position.y) / 1.6;
-
-    //     camera.position.y = runner.position.y - difference;
-    //   }
-    // }
 
     if (newGameBool) {
       setTimeout(() => {
@@ -249,12 +248,20 @@ function draw() {
     removeOldPlatforms();
     addNewBackgroundTiles();
     removeOldBackgroundTiles();
+    if (checkGameOverText) {
+      backgroundTiles.forEach((tile) => {
+        tile.velocity.x = 0;
+      });
+    }
+    parallaxBackground();
+
     removeOldBins();
     addBinToGroup();
     addCoinToGroup();
     removeCoins();
     addWaterToGroup();
     removeWaterFromGroup();
+    waterIncrease();
     fallCheck();
     drawSprites();
     updateScore();
@@ -263,6 +270,7 @@ function draw() {
     updateCoins();
     binGroup.collide(platformsGroup);
   }
+
   if (checkGameOverText) {
     bigGameOverText();
 
@@ -397,31 +405,37 @@ function removeOldPlatforms() {
 //*************************Background ****************
 
 function addNewBackgroundTiles() {
-  let bgLoop;
   if (backgroundTiles.length < 5) {
     currentBackgroundTilePosition += 839;
 
     if (currentBackgroundTilePosition <= 838) {
       bgLoop = createSprite(
         currentBackgroundTilePosition,
-        225 / 2,
+        200 / 2,
         width,
         height
       );
     } else {
       bgLoop = createSprite(
         currentBackgroundTilePosition,
-        225 / 2,
+        200 / 2,
         width,
         height
       );
     }
     bgLoop.addAnimation("bg", gameBackground);
     bgLoop.depth = -1;
-    bgLoop.velocity.x = runnerSpeed / 12;
+
+    // bgLoop.velocity.x = runnerSpeed / 12;
 
     backgroundTiles.add(bgLoop);
   }
+}
+
+function parallaxBackground() {
+  backgroundTiles.forEach((tile) => {
+    tile.position.x += 1;
+  });
 }
 
 function removeOldBackgroundTiles() {
@@ -466,10 +480,12 @@ function hitPlatform(runner, platform) {
 }
 
 function hitBin(runner, bin) {
-  currentWaterHeight = waterHeight;
+  currentWaterHeight = Math.floor(waterHeight);
   currentCoinCount = coinCount;
   coinReset = 0;
-  addThrowCoinGroup();
+  if (coinCount > 0) {
+    addThrowCoinGroup();
+  }
 
   let waterReduce = setInterval(() => {
     waterGroup.forEach((element) => {
@@ -477,10 +493,11 @@ function hitBin(runner, bin) {
     });
     waterHeight += 1;
 
-    if (waterHeight === currentWaterHeight + coinCount) {
+    if (Math.floor(waterHeight) === currentWaterHeight + coinCount) {
       clearInterval(waterReduce);
     }
-    if (waterHeight === 500) {
+
+    if (Math.floor(waterHeight) === 500) {
       waterHeight = 499;
       clearInterval(waterReduce);
     }
@@ -532,6 +549,16 @@ function removeWaterFromGroup() {
       waterGroup[i].remove();
     }
   }
+}
+var count = 0;
+
+function waterIncrease() {
+  count++;
+
+  waterGroup.forEach((element) => {
+    element.position.y -= 0.03;
+  });
+  waterHeight -= 0.03;
 }
 
 // function waves() {
@@ -595,13 +622,16 @@ function addThrowCoinGroup() {
 function collectCoin(runner, coin) {
   if (coinCount < 25) {
     coin.changeAnimation("sparkle");
-
     if (musicOn) {
       coinSound.play();
     }
     coin.rotationSpeed = random(-20, 20);
-    coinReset += 1;
-    coinCount += 1;
+
+    if (!coinTime) {
+      coinReset += 1;
+      coinCount += 1;
+      coinTime = true;
+    }
   } else {
     ///animation
   }
@@ -614,6 +644,24 @@ function removeCoins() {
     }
   }
 }
+
+// function bagState() {
+//   if (coinCount === 0) {
+//     return coinCount + " empty";
+//   }
+//   if (coinCount < 6) {
+//     return coinCount + " 1/4";
+//   }
+//   if (coinCount < 11) {
+//     return coinCount + " 1/2";
+//   }
+//   if (coinCount < 16) {
+//     return coinCount + " 3/4";
+//   }
+//   if (coinCount < 21) {
+//     return "full";
+//   }
+// }
 
 function updateCoins() {
   fill("white");
@@ -651,14 +699,13 @@ function solidGround() {
 
   //     if (camera.position.y > 195) {
   //       clearInterval(moveCamera);
-  //       console.log("do i get in here");
-  //       console.log(camera.position.y, "camera");
+
   //     }
   //   }, 1);
   // }
 
   runner.velocity.y = 0;
-  if (!isFlashing) {
+  if (runner.position.y < 300) {
     runner.changeAnimation("run");
   }
   if (runner.touching.right) {
@@ -684,8 +731,9 @@ function wetGround(runner, water) {
 
 function jumpDetection() {
   if (
-    keyWentDown(UP_ARROW)
-    // (runner.velocity.y === 0 || runner.velocity.y === 1)
+    keyWentDown(UP_ARROW) &&
+    (runner.velocity.y === 0 || runner.velocity.y === 1) &&
+    !drowned
   ) {
     if (!isFlashing) {
       runner.changeAnimation("jump");
@@ -742,12 +790,12 @@ function updateLives() {
 
 function increaseRunnerSpeed() {
   runnerSpeed += 0.1;
-  waterHeight -= 1;
+  // waterHeight -= 1;
 }
 
 function fallCheck() {
   if (
-    (runner.position.y > waterHeight - 160 &&
+    (runner.position.y > waterHeight - 165 &&
       waterHeight > currentPlatformHeight) ||
     runner.position.y > 450
   ) {
@@ -763,8 +811,8 @@ function fallCheck() {
     } else {
       if (!hasDrowned) {
         runner.position.y -= 50;
-        hasDrowned = true;
         runner.changeAnimation("splash");
+        hasDrowned = true;
       }
     }
     drowned = true;
