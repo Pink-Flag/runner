@@ -256,13 +256,12 @@ function draw() {
     removeOldBackgroundTiles();
     if (checkGameOverText) {
       backgroundTiles.forEach((tile) => {
+        console.log("am i?");
         tile.velocity.x = 0;
       });
     }
-    parallaxBackground();
 
     removeOldBins();
-    // removeDrops();
     addBinToGroup();
     addCoinToGroup();
     removeCoins();
@@ -274,7 +273,6 @@ function draw() {
     updateScore();
     drawDrops();
     updateDrops();
-    // createDrops();
     // updateLives();
     updateCoins();
     binGroup.collide(platformsGroup);
@@ -327,41 +325,6 @@ function updateDrops() {
   }
 }
 
-// function removeRain() {
-//   for (let i = 0; i < platformsGroup.length; i++) {
-//     if (platformsGroup[i].position.x < runner.position.x - 1500) {
-//       platformsGroup[i].remove();
-//     }
-//   }
-// }
-
-// function createDrops() {
-//   if (dropsGroup.length < 200) {
-//     let drop = ellipse(this.x, this.y, random(1, 5), random(1, 5));
-
-//     noStroke();
-//     fill(5, 41, 98);
-//     drop.x = random(0, width);
-//     drop.y = random(0, -height);
-//     drop.speed = random(5, 10);
-//     drop.gravity = 1.05;
-//     drop.y = drop.y + drop.speed * drop.gravity;
-
-//     if (drop.y > height) {
-//       drop.y = random(0, -height);
-//       drop.gravity = 0;
-//     }
-//   }
-// }
-
-// function removeDrops() {
-//   for (let i = 0; i < dropsGroup.length; i++) {
-//     if (dropsGroup[i].position.x < runner.position.x - 3000) {
-//       dropsGroup[i].remove();
-//     }
-//   }
-// }
-
 function Drop() {
   if (drop.length < 998) {
     this.x = random(0, 10000);
@@ -370,17 +333,13 @@ function Drop() {
     this.x = random(camera.position.x + 200, camera.position.x + 1000);
     this.y = random(0, -height);
   }
-  // if (camera.position.x > this.x + 1000) {
-  //   this.x += 1000;
-  // }
+
   this.show = function () {
     noStroke();
     fill(5, random(40, 160), 98);
     ellipse(this.x, this.y, random(1, 5), random(1, 5));
   };
   this.update = function () {
-    // this.depth = 10;
-
     this.speed = random(5, 10);
     this.gravity = 1.05;
     this.y = this.y + this.speed * this.gravity;
@@ -522,17 +481,17 @@ function addNewBackgroundTiles() {
     bgLoop.addAnimation("bg", gameBackground);
     bgLoop.depth = 1;
 
-    // bgLoop.velocity.x = runnerSpeed / 12;
+    bgLoop.velocity.x = runnerSpeed / 12;
 
     backgroundTiles.add(bgLoop);
   }
 }
 
-function parallaxBackground() {
-  backgroundTiles.forEach((tile) => {
-    tile.position.x += 1;
-  });
-}
+// function parallaxBackground() {
+//   backgroundTiles.forEach((tile) => {
+//     tile.position.x += 1;
+//   });
+// }
 
 function removeOldBackgroundTiles() {
   for (let i = 0; i < backgroundTiles.length; i++) {
