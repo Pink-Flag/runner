@@ -1,5 +1,6 @@
 var circlePosition;
 var runner;
+var coinReset;
 var runningAnimation;
 var jumpingAnimation;
 var flashingAnimation;
@@ -16,7 +17,7 @@ var gameOver = false;
 var platformsGroup;
 var solar;
 var gravity = 1;
-var jumpPower = 15;
+var jumpPower = 18;
 var runnerSpeed = 10;
 var isFlashing = false;
 var currentBackgroundTilePosition;
@@ -30,7 +31,7 @@ var sparkleAnimation;
 var water;
 var throwCoinGroup;
 var currentWaterTilePosition;
-var waterHeight = 450;
+var waterHeight = 500;
 const height = 390;
 const width = 840;
 let musicOn = true;
@@ -40,12 +41,17 @@ var bin;
 var coinGroup;
 var add;
 var currentCoinCount;
-var waterReduce;
+var bgLoop;
 var bottle;
 var checkGameOverText = false;
 var gameOverTimeout;
 var newGameBool = false;
 var currentPlatformHeight;
+var drowned = false;
+var waterAxisX;
+var waterAxisY;
+var hasDrowned = false;
+var coinTime = false;
 
 var platform1132,
   platform1587,
@@ -149,9 +155,8 @@ function preload() {
     "./Images/explosion/tile031.png"
   );
 
-  gameBackground = loadImage(
-    "https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultBackground.png"
-  );
+  gameBackground = loadImage("./Images/background.png");
+
   platformBackground = loadImage(
     "https://la-wit.github.io/build-an-infinite-runner/build/images/environments/defaultPlatform.png"
   );
@@ -212,15 +217,29 @@ function draw() {
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
     runner.collide(platformsGroup, solidGround);
-    runner.collide(waterGroup, wetGround);
+    runner.overlap(waterGroup, wetGround);
     runner.overlap(binGroup, hitBin);
     runner.overlap(platformsGroup, hitPlatform);
     runner.overlap(coinGroup, collectCoin);
     addNewPlatforms();
     jumpDetection();
+
     if (!hasFallen) {
       camera.position.x = runner.position.x + 300;
     }
+
+    if (coinTime) {
+      setTimeout(() => {
+        coinTime = false;
+      }, 55);
+    }
+
+    if (runner.position.y < 120) {
+      let jumpDiff = (runner.position.y - 120) / 2;
+
+      camera.position.y = jumpDiff + 195;
+    }
+
     if (newGameBool) {
       setTimeout(() => {
         newGameBool = false;
@@ -229,28 +248,35 @@ function draw() {
     removeOldPlatforms();
     addNewBackgroundTiles();
     removeOldBackgroundTiles();
+    if (checkGameOverText) {
+      backgroundTiles.forEach((tile) => {
+        tile.velocity.x = 0;
+      });
+    }
+    parallaxBackground();
+
     removeOldBins();
     addBinToGroup();
     addCoinToGroup();
     removeCoins();
     addWaterToGroup();
     removeWaterFromGroup();
+    waterIncrease();
     fallCheck();
     drawSprites();
     updateScore();
-    console.log(currentPlatformHeight);
+
     // updateLives();
     updateCoins();
     binGroup.collide(platformsGroup);
   }
+
   if (checkGameOverText) {
     bigGameOverText();
 
     if (keyWentDown("space")) {
       newGame();
       // clearTimeout(gameOverTimeout);
-
-      firstPlatform = true;
     }
   }
   if (checkGameOverText && gameOver) {
@@ -260,7 +286,6 @@ function draw() {
     updateSprites(false);
     if (keyWentDown("space")) {
       newGame();
-      firstPlatform = true;
     }
   }
   addNewPlatforms();
@@ -380,31 +405,37 @@ function removeOldPlatforms() {
 //*************************Background ****************
 
 function addNewBackgroundTiles() {
-  let bgLoop;
   if (backgroundTiles.length < 5) {
     currentBackgroundTilePosition += 839;
 
     if (currentBackgroundTilePosition <= 838) {
       bgLoop = createSprite(
         currentBackgroundTilePosition,
-        height / 2,
+        200 / 2,
         width,
         height
       );
     } else {
       bgLoop = createSprite(
         currentBackgroundTilePosition,
-        height / 2,
+        200 / 2,
         width,
         height
       );
     }
     bgLoop.addAnimation("bg", gameBackground);
     bgLoop.depth = -1;
-    bgLoop.velocity.x = runnerSpeed / 12;
+
+    // bgLoop.velocity.x = runnerSpeed / 12;
 
     backgroundTiles.add(bgLoop);
   }
+}
+
+function parallaxBackground() {
+  backgroundTiles.forEach((tile) => {
+    tile.position.x += 1;
+  });
 }
 
 function removeOldBackgroundTiles() {
@@ -449,30 +480,35 @@ function hitPlatform(runner, platform) {
 }
 
 function hitBin(runner, bin) {
-  currentWaterHeight = waterHeight;
+  currentWaterHeight = Math.floor(waterHeight);
   currentCoinCount = coinCount;
+  coinReset = 0;
+  if (coinCount > 0) {
+    addThrowCoinGroup();
+  }
 
-  addThrowCoinGroup();
-
-  waterReduce = setInterval(() => {
+  let waterReduce = setInterval(() => {
     waterGroup.forEach((element) => {
       element.position.y += 1;
     });
     waterHeight += 1;
 
-    if (waterHeight === currentWaterHeight + coinCount) {
+    if (Math.floor(waterHeight) === currentWaterHeight + coinCount) {
       clearInterval(waterReduce);
     }
-    if (waterHeight === 450) {
+
+    if (Math.floor(waterHeight) === 500) {
+      waterHeight = 499;
       clearInterval(waterReduce);
     }
+    return;
   }, 100);
 
   let coinReduce = setInterval(() => {
     coinCount -= 1;
-    if (coinCount < 1) {
+    if (coinCount < 1 + coinReset) {
       clearInterval(coinReduce);
-      coinCount = 0;
+      coinCount = 0 + coinReset;
     }
   }, 50);
 
@@ -513,6 +549,16 @@ function removeWaterFromGroup() {
       waterGroup[i].remove();
     }
   }
+}
+var count = 0;
+
+function waterIncrease() {
+  count++;
+
+  waterGroup.forEach((element) => {
+    element.position.y -= 0.03;
+  });
+  waterHeight -= 0.03;
 }
 
 // function waves() {
@@ -574,14 +620,21 @@ function addThrowCoinGroup() {
 }
 
 function collectCoin(runner, coin) {
-  coin.changeAnimation("sparkle");
+  if (coinCount < 25) {
+    coin.changeAnimation("sparkle");
+    if (musicOn) {
+      coinSound.play();
+    }
+    coin.rotationSpeed = random(-20, 20);
 
-  if (musicOn) {
-    coinSound.play();
+    if (!coinTime) {
+      coinReset += 1;
+      coinCount += 1;
+      coinTime = true;
+    }
+  } else {
+    ///animation
   }
-  coin.rotationSpeed = random(-20, 20);
-  coinCount += 1;
-  // waterHeight += 0.5;
 }
 
 function removeCoins() {
@@ -591,6 +644,24 @@ function removeCoins() {
     }
   }
 }
+
+// function bagState() {
+//   if (coinCount === 0) {
+//     return coinCount + " empty";
+//   }
+//   if (coinCount < 6) {
+//     return coinCount + " 1/4";
+//   }
+//   if (coinCount < 11) {
+//     return coinCount + " 1/2";
+//   }
+//   if (coinCount < 16) {
+//     return coinCount + " 3/4";
+//   }
+//   if (coinCount < 21) {
+//     return "full";
+//   }
+// }
 
 function updateCoins() {
   fill("white");
@@ -622,20 +693,35 @@ function randomIndex() {
 }
 
 function solidGround() {
+  // if (camera.position.y > 195) {
+  //   let moveCamera = setInterval(() => {
+  //     camera.position.y++;
+
+  //     if (camera.position.y > 195) {
+  //       clearInterval(moveCamera);
+
+  //     }
+  //   }, 1);
+  // }
+
   runner.velocity.y = 0;
-  if (!isFlashing) {
+  if (runner.position.y < 300) {
     runner.changeAnimation("run");
   }
   if (runner.touching.right) {
-    runner.velocity.x = 0;
+    runner.velocity.x = -15;
     runner.velocity.y += 30;
   }
 }
 
-function wetGround() {
-  runner.velocity.y = 0;
-  runner.velocity.x = 0;
-  runnerSpeed = 0;
+function wetGround(runner, water) {
+  waterAxisX = water.position.x;
+  waterAxisY = water.position.y;
+  if (drowned) {
+    runner.velocity.y = 0;
+    runner.velocity.x = 0;
+    runnerSpeed = 0;
+  }
 
   if (runner.touching.right) {
     runner.velocity.x = 0;
@@ -645,8 +731,9 @@ function wetGround() {
 
 function jumpDetection() {
   if (
-    keyWentDown(UP_ARROW)
-    // (runner.velocity.y === 0 || runner.velocity.y === 1)
+    keyWentDown(UP_ARROW) &&
+    (runner.velocity.y === 0 || runner.velocity.y === 1) &&
+    !drowned
   ) {
     if (!isFlashing) {
       runner.changeAnimation("jump");
@@ -703,13 +790,32 @@ function updateLives() {
 
 function increaseRunnerSpeed() {
   runnerSpeed += 0.1;
-  waterHeight -= 10;
+  // waterHeight -= 1;
 }
 
 function fallCheck() {
-  if (runner.position.y > waterHeight - 100) {
-    runner.changeAnimation("splash");
-
+  if (
+    (runner.position.y > waterHeight - 165 &&
+      waterHeight > currentPlatformHeight) ||
+    runner.position.y > 450
+  ) {
+    if (runner.position.y > 430) {
+      if (!hasDrowned) {
+        runner.changeAnimation("splash");
+        runner.velocity.x = -10;
+        runner.velocity.y = 0;
+        runner.position.x = waterAxisX + 50;
+        runner.position.y -= 250;
+        hasDrowned = true;
+      }
+    } else {
+      if (!hasDrowned) {
+        runner.position.y -= 50;
+        runner.changeAnimation("splash");
+        hasDrowned = true;
+      }
+    }
+    drowned = true;
     hasFallen = true;
     runner.depth = 0;
     checkGameOverText = true;
@@ -760,19 +866,24 @@ function gameOverText() {
 }
 
 function newGame() {
-  firstPlatform = true;
+  hasDrowned = false;
+  drowned = false;
+  waterAxisX = 0;
+  waterAxisY = 0;
+
   runner.changeAnimation("run");
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
   coinGroup.removeSprites();
   waterGroup.removeSprites();
-  waterHeight = 450;
+  waterHeight = 500;
   playerLives = 3;
   binGroup.removeSprites();
   switchBool = true;
   index = 0;
   gameOver = false;
   newGameBool = true;
+  camera.position.y = 195;
   checkGameOverText = false;
   hasFallen = false;
   playerScore = 0;
