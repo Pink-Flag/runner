@@ -63,7 +63,7 @@ var waterAxisX;
 var waterAxisY;
 var hasDrowned = false;
 var coinTime = false;
-
+var firstTimeLoad = true;
 var platform1132,
   platform1587,
   platform327,
@@ -77,7 +77,7 @@ var distance = [200, 500, 800, 1100, 1500];
 
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
-
+console.log("Here")
 // Preload  the animations
 function preload() {
   jumpingAnimation = loadAnimation(
@@ -223,7 +223,17 @@ function setup() {
   currentWaterTilePosition = -width;
 }
 
-function draw() {
+
+function draw() {  
+  
+  if(firstTimeLoad){
+    controlls()
+    if (keyWentDown("space")) {
+     firstTimeLoad= false;
+    }
+ 
+  
+  }else{
   if (!gameOver) {
     background(200);
     runner.depth = 4;
@@ -304,6 +314,7 @@ function draw() {
     }
   }
   addNewPlatforms();
+}
 }
 
 function coinBin(bin, coin) {
@@ -883,6 +894,30 @@ function isGameOver() {
   gameOver = !gameOver;
 }
 
+function controlls (){
+ 
+  background(0, 0, 0, 10);
+
+  fill("white");
+  stroke("black");
+  textAlign(CENTER);
+  textFont(gameFont);
+  strokeWeight(2)
+  textSize(16)
+  text("Collect as many bottles as possible, and recycle ", camera.position.x, camera.position.y-100);
+  text("them by putting them in the bins in order to keep  ", camera.position.x, camera.position.y-70);
+  text("the sea level from rising !", camera.position.x, camera.position.y-40);
+  textSize(14);
+  
+  text("Use the UP ARROW key to jump over ", camera.position.x, camera.position.y+30);
+  text("the gaps between the platforms", camera.position.x, camera.position.y + 60);
+  text(
+    "Press Space to start the game" , camera.position.x, camera.position.y + 120
+  );
+   
+
+}
+
 function updateScore() {
   if (frameCount % 60 === 0) {
     playerScore++;
@@ -1025,6 +1060,7 @@ function newGame() {
     gameMusic.play();
   }
 }
+
 
 // runner.changeAnimation("flash");
 // isFlashing = true;
