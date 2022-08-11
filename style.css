@@ -31,10 +31,17 @@ canvas {
   -ms-flex-align: center;
   align-items: center;
   text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 .loading-screen p {
   -webkit-animation: pulse 1s linear 2s infinite alternate;
   animation: pulse 1s linear 2s infinite alternate;
+}
+
+.img-up{
+width:50px;
+height: 50px;
 }
 @-webkit-keyframes pulse {
   0% {
