@@ -1,10 +1,9 @@
 // short or long jump
 // scoreboard
-// main menu
+//bin knocked over animation
 
 // low pass on audio as water rises?
 // fox running through water splash
-// get rid of bottles
 
 var circlePosition;
 var runner;
@@ -25,7 +24,7 @@ var gameOver = false;
 var platformsGroup;
 var solar;
 var gravity = 1;
-var jumpPower = 18;
+var jumpPower = 17;
 var runnerSpeed = 10;
 var isFlashing = false;
 var currentBackgroundTilePosition;
@@ -37,9 +36,11 @@ var currentWaterHeight;
 var sparkleSpriteSheet;
 var sparkleAnimation;
 var water;
+var foxWaterHeight = 0;
 // var throwCoinGroup;
 var currentWaterTilePosition;
 var waterHeight = 500;
+// var waterHeight = 400;
 const height = 390;
 const width = 840;
 let musicOn = true;
@@ -231,7 +232,6 @@ function draw() {
     runner.velocity.x = runnerSpeed;
 
     runner.collide(platformsGroup, solidGround);
-    runner.overlap(waterGroup, wetGround);
     runner.overlap(binGroup, hitBin);
     runner.overlap(platformsGroup, hitPlatform);
     runner.overlap(coinGroup, collectCoin);
@@ -267,7 +267,6 @@ function draw() {
         tile.velocity.x = 0;
       });
     }
-    parallaxBackground();
 
     removeOldBins();
     addBinToGroup();
@@ -277,8 +276,11 @@ function draw() {
     removeWaterFromGroup();
     waterIncrease();
     fallCheck();
+    drownedCheck();
     drawSprites();
-
+    runner.overlap(waterGroup, wetGround);
+    updateDrops();
+    drawDrops();
     updateScore();
 
     // updateLives();
@@ -345,7 +347,7 @@ function Drop() {
 
   this.show = function () {
     noStroke();
-    fill(5, random(40, 160), 98);
+    fill(5, random(82, 125), 176);
     ellipse(this.x, this.y, random(1, 5), random(1, 5));
   };
   this.update = function () {
@@ -378,38 +380,33 @@ function drawSplash() {
 }
 
 function updateSplash() {
-  // if (runner.position.x > splash[100].x) {
   splash.shift();
   newSplash = new Splash();
   splash.push(newSplash);
-  // }
 }
 
 function Splash() {
-  // if (splash.length < 998) {
   this.x = runner.position.x;
-  this.y = runner.position.y + 20;
-  // } else {
-  //   this.x = random(camera.position.x + 200, camera.position.x + 1000);
-  //   this.y = random(0, -height);
-  // }
+  this.y = runner.position.y + 20 + foxWaterHeight;
 
   this.show = function () {
     noStroke();
-    fill(0, random(198), 255);
+    if (runnerSpeed > 7) {
+      fill(0, random(198), 255);
+    } else {
+      runnerFlash();
+      fill(238, random(50, 160), 62);
+    }
     ellipse(this.x, this.y, random(1, 5), random(1, 5));
   };
   this.update = function () {
-    this.speed = random(1, 20);
-    this.wind = random(0, 0.2);
-    this.gravity = 1.05;
-    this.y = this.y - this.speed;
+    this.y = this.y - random(-6, 10);
     this.x = this.x + random(1, 10);
 
-    if (this.y > height) {
-      this.y = random(0, -height);
-      this.gravity = 0;
-    }
+    // if (this.y > height) {
+    //   this.y = random(0, 2);
+    //   this.gravity = 0;
+    // }
   };
 }
 
@@ -543,16 +540,10 @@ function addNewBackgroundTiles() {
     bgLoop.addAnimation("bg", gameBackground);
     bgLoop.depth = -1;
 
-    // bgLoop.velocity.x = runnerSpeed / 12;
+    bgLoop.velocity.x = runnerSpeed / 12;
 
     backgroundTiles.add(bgLoop);
   }
-}
-
-function parallaxBackground() {
-  backgroundTiles.forEach((tile) => {
-    tile.position.x += 1;
-  });
 }
 
 function removeOldBackgroundTiles() {
@@ -642,6 +633,27 @@ function hitBin(runner, bin) {
 }
 
 //  *************************Water*****************
+
+function drownedCheck() {
+  if (runnerSpeed < 0) {
+    waterHeight += 1;
+    drowned = true;
+    hasFallen = true;
+    runner.depth = 0;
+    checkGameOverText = true;
+    gameOverTimeout = setTimeout(() => {
+      if (!newGameBool) {
+        gameOver = true;
+        gameMusic.stop();
+
+        if (musicOn) {
+          gameOverMusic.play();
+        }
+      }
+    }, 1000);
+  }
+}
+
 function addWaterToGroup() {
   let waterLoop;
   if (waterGroup.length < 7) {
@@ -667,15 +679,23 @@ function removeWaterFromGroup() {
     }
   }
 }
-var count = 0;
 
 function waterIncrease() {
-  count++;
-
-  waterGroup.forEach((element) => {
-    element.position.y -= 0.03;
-  });
-  waterHeight -= 0.03;
+  if (runnerSpeed > 3) {
+    waterGroup.forEach((element) => {
+      element.position.y -= 0.03;
+      // element.position.y -= 0.5;
+    });
+    waterHeight -= 0.03;
+    foxWaterHeight -= 0.03;
+  } else {
+    waterGroup.forEach((element) => {
+      element.position.y -= 0.4;
+      // element.position.y -= 0.5;
+    });
+    waterHeight -= 0.4;
+    foxWaterHeight -= 0.4;
+  }
 }
 
 // function waves() {
@@ -794,7 +814,9 @@ function updateCoins() {
 // ************* Runner Functions***************
 
 function runnerFlash() {
-  runner.changeAnimation("flash");
+  if (runnerSpeed < 7 && runnerSpeed > 0.2) {
+    runner.changeAnimation("flash");
+  }
 }
 
 function randomIndex() {
@@ -820,9 +842,6 @@ function solidGround() {
   //     }
   //   }, 1);
   // }
-  // console.log("hi");
-  updateSplash();
-  drawSplash();
 
   runner.velocity.y = 0;
   if (runner.position.y < 300) {
@@ -835,6 +854,16 @@ function solidGround() {
 }
 
 function wetGround(runner, water) {
+  if (!checkGameOverText) {
+    updateSplash();
+    drawSplash();
+  } else {
+    drawSplash();
+  }
+  if (runnerSpeed > 0) {
+    runnerSpeed -= 0.05;
+  }
+
   waterAxisX = water.position.x;
   waterAxisY = water.position.y;
   if (drowned) {
@@ -855,11 +884,11 @@ function jumpDetection() {
     (runner.velocity.y === 0 || runner.velocity.y === 1) &&
     !drowned
   ) {
-    console.log("jump");
     if (!isFlashing) {
       runner.changeAnimation("jump");
     }
     runner.animation.rewind();
+
     runner.velocity.y = -jumpPower;
     if (musicOn) {
       jumpSound.play();
@@ -921,7 +950,7 @@ function fallCheck() {
     runner.position.y > 450
   ) {
     if (runner.position.y > 430) {
-      if (!hasDrowned) {
+      if (!hasDrowned && runnerSpeed > 0) {
         runner.changeAnimation("splash");
         runner.velocity.x = -10;
         runner.velocity.y = 0;
@@ -929,12 +958,11 @@ function fallCheck() {
         runner.position.y -= 250;
         hasDrowned = true;
       }
-    } else {
-      if (!hasDrowned) {
-        runner.position.y -= 50;
-        runner.changeAnimation("splash");
-        hasDrowned = true;
-      }
+    }
+    if (!hasDrowned) {
+      runner.position.y -= 50;
+      runner.changeAnimation("splash");
+      hasDrowned = true;
     }
     drowned = true;
     hasFallen = true;
@@ -1000,6 +1028,7 @@ function newGame() {
   coinGroup.removeSprites();
   waterGroup.removeSprites();
   waterHeight = 500;
+  foxWaterHeight = 0;
   playerLives = 3;
   binGroup.removeSprites();
   switchBool = true;
