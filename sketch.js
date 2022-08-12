@@ -5,9 +5,10 @@
 // low pass on audio as water rises?
 // fox running through water splash
 // get rid of bottles
-
+let c1, c2;
 var circlePosition;
 var runner;
+var gettingDark = true;
 var coinReset;
 var runningAnimation;
 var jumpingAnimation;
@@ -74,10 +75,12 @@ var currentPlatformLocation = 0;
 var index;
 var random;
 var distance = [200, 500, 800, 1100, 1500];
-
+var r = 140;
+var g = 208;
+var b = 240;
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
-console.log("Here")
+console.log("Here");
 // Preload  the animations
 function preload() {
   jumpingAnimation = loadAnimation(
@@ -201,6 +204,7 @@ function setup() {
   createCanvas(width, height);
   switchBool = true;
   gameMusic.play();
+
   index = 0;
   setupDrops();
   runner = createSprite(50, 100, 25, 40);
@@ -223,98 +227,100 @@ function setup() {
   currentWaterTilePosition = -width;
 }
 
-
-function draw() {  
-  
-  if(firstTimeLoad){
-    controlls()
+function draw() {
+  if (firstTimeLoad) {
+    controlls();
     if (keyWentDown("space")) {
-     firstTimeLoad= false;
+      firstTimeLoad = false;
     }
- 
-  
-  }else{
-  if (!gameOver) {
-    background(200);
-    runner.depth = 4;
-    runner.velocity.y += gravity;
-    runner.velocity.x = runnerSpeed;
+  } else {
+    if (!gameOver) {
+      background(r, g, b);
+      if (gettingDark) {
+        backgroundColorDark();
+      } else {
+        backgroundColorLight();
+      }
+      runner.depth = 4;
+      runner.velocity.y += gravity;
+      runner.velocity.x = runnerSpeed;
 
-    runner.collide(platformsGroup, solidGround);
-    runner.overlap(waterGroup, wetGround);
-    runner.overlap(binGroup, hitBin);
-    runner.overlap(platformsGroup, hitPlatform);
-    runner.overlap(coinGroup, collectCoin);
-    addNewPlatforms();
-    jumpDetection();
+      runner.collide(platformsGroup, solidGround);
+      runner.overlap(waterGroup, wetGround);
+      runner.overlap(binGroup, hitBin);
+      runner.overlap(platformsGroup, hitPlatform);
+      runner.overlap(coinGroup, collectCoin);
+      addNewPlatforms();
+      jumpDetection();
 
-    if (!hasFallen) {
-      camera.position.x = runner.position.x + 300;
+      if (!hasFallen) {
+        camera.position.x = runner.position.x + 300;
+      }
+
+      if (coinTime) {
+        setTimeout(() => {
+          coinTime = false;
+        }, 55);
+      }
+
+      if (runner.position.y < 120) {
+        let jumpDiff = (runner.position.y - 120) / 2;
+
+        camera.position.y = jumpDiff + 195;
+      }
+
+      if (newGameBool) {
+        setTimeout(() => {
+          newGameBool = false;
+        }, 1000);
+      }
+      removeOldPlatforms();
+      // addNewBackgroundTiles();
+      // removeOldBackgroundTiles();
+
+      if (checkGameOverText) {
+        backgroundTiles.forEach((tile) => {
+          tile.velocity.x = 0;
+        });
+      }
+      parallaxBackground();
+
+      removeOldBins();
+      addBinToGroup();
+      addCoinToGroup();
+      removeCoins();
+      addWaterToGroup();
+      removeWaterFromGroup();
+      waterIncrease();
+      fallCheck();
+      drawSprites();
+
+      updateScore();
+
+      // updateLives();
+      updateCoins();
+      binGroup.collide(platformsGroup);
     }
 
-    if (coinTime) {
-      setTimeout(() => {
-        coinTime = false;
-      }, 55);
-    }
-
-    if (runner.position.y < 120) {
-      let jumpDiff = (runner.position.y - 120) / 2;
-
-      camera.position.y = jumpDiff + 195;
-    }
-
-    if (newGameBool) {
-      setTimeout(() => {
-        newGameBool = false;
-      }, 1000);
-    }
-    removeOldPlatforms();
-    addNewBackgroundTiles();
-    removeOldBackgroundTiles();
     if (checkGameOverText) {
-      backgroundTiles.forEach((tile) => {
-        tile.velocity.x = 0;
-      });
+      bigGameOverText();
+
+      if (keyWentDown("space")) {
+        newGame();
+        // clearTimeout(gameOverTimeout);
+      }
     }
-    parallaxBackground();
-
-    removeOldBins();
-    addBinToGroup();
-    addCoinToGroup();
-    removeCoins();
-    addWaterToGroup();
-    removeWaterFromGroup();
-    waterIncrease();
-    fallCheck();
-    drawSprites();
-
-    updateScore();
-
-    // updateLives();
-    updateCoins();
-    binGroup.collide(platformsGroup);
-  }
-
-  if (checkGameOverText) {
-    bigGameOverText();
-
-    if (keyWentDown("space")) {
-      newGame();
-      // clearTimeout(gameOverTimeout);
+    if (checkGameOverText && gameOver) {
+      gameOverText();
+      bigGameOverText();
+      splashAnimation.frameDelay = 5000;
+      updateSprites(false);
+      if (keyWentDown("space")) {
+        newGame();
+      }
     }
+    addNewPlatforms();
   }
-  if (checkGameOverText && gameOver) {
-    gameOverText();
-    bigGameOverText();
-    splashAnimation.frameDelay = 5000;
-    updateSprites(false);
-    if (keyWentDown("space")) {
-      newGame();
-    }
-  }
-  addNewPlatforms();
-}
 }
 
 function coinBin(bin, coin) {
@@ -532,6 +538,48 @@ function removeOldPlatforms() {
 
 //*************************Background ****************
 
+function backgroundColorDark() {
+  setTimeout(() => {
+    setInterval(() => {
+      if (r > 0) {
+        r -= 1;
+      }
+
+      if (g > 0) {
+        g -= 1;
+      }
+
+      if (b > 0) {
+        b -= 1;
+      }
+      if (r === 0 && g === 0 && r === 0) {
+        gettingDark = false;
+      }
+    }, 2000);
+  }, 5000);
+}
+function backgroundColorLight() {
+
+  setTimeout(() => {
+    setInterval(() => {
+      if (r < 140) {
+        r += 1;
+      }
+
+      if (g < 208) {
+        g += 1;
+      }
+
+      if (b < 240) {
+        b += 1;
+      }
+      if (r === 139 && g === 207 && b === 239) {
+        console.log("flip")
+        gettingDark = true;
+      }
+    }, 2000);
+  }, 5000);
+}
 function addNewBackgroundTiles() {
   if (backgroundTiles.length < 5) {
     currentBackgroundTilePosition += 839;
@@ -894,28 +942,47 @@ function isGameOver() {
   gameOver = !gameOver;
 }
 
-function controlls (){
- 
+function controlls() {
   background(0, 0, 0, 10);
 
   fill("white");
   stroke("black");
   textAlign(CENTER);
   textFont(gameFont);
-  strokeWeight(2)
-  textSize(16)
-  text("Collect as many bottles as possible, and recycle ", camera.position.x, camera.position.y-100);
-  text("them by putting them in the bins in order to keep  ", camera.position.x, camera.position.y-70);
-  text("the sea level from rising !", camera.position.x, camera.position.y-40);
-  textSize(14);
-  
-  text("Use the UP ARROW key to jump over ", camera.position.x, camera.position.y+30);
-  text("the gaps between the platforms", camera.position.x, camera.position.y + 60);
+  strokeWeight(2);
+  textSize(16);
   text(
-    "Press Space to start the game" , camera.position.x, camera.position.y + 120
+    "Collect as many bottles as possible, and recycle ",
+    camera.position.x,
+    camera.position.y - 100
   );
-   
+  text(
+    "them by putting them in the bins in order to keep  ",
+    camera.position.x,
+    camera.position.y - 70
+  );
+  text(
+    "the sea level from rising !",
+    camera.position.x,
+    camera.position.y - 40
+  );
+  textSize(14);
 
+  text(
+    "Use the UP ARROW key to jump over ",
+    camera.position.x,
+    camera.position.y + 30
+  );
+  text(
+    "the gaps betwen the platforms",
+    camera.position.x,
+    camera.position.y + 60
+  );
+  text(
+    "Press Space to start the game",
+    camera.position.x,
+    camera.position.y + 120
+  );
 }
 
 function updateScore() {
@@ -1028,6 +1095,9 @@ function newGame() {
   waterAxisY = 0;
   drop = [];
   setupDrops();
+  r = 140;
+  g = 208;
+  b = 240;
 
   runner.changeAnimation("run");
   platformsGroup.removeSprites();
@@ -1044,6 +1114,7 @@ function newGame() {
   camera.position.y = 195;
   checkGameOverText = false;
   hasFallen = false;
+  gettingDark = true;
   playerScore = 0;
   updateSprites(true);
   runnerSpeed = 12;
@@ -1060,7 +1131,6 @@ function newGame() {
     gameMusic.play();
   }
 }
-
 
 // runner.changeAnimation("flash");
 // isFlashing = true;
