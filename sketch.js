@@ -226,7 +226,7 @@ function setup() {
 
 function draw() {
   if (!gameOver) {
-    background(200);
+    background(300);
     runner.depth = 4;
     runner.velocity.y += gravity;
     runner.velocity.x = runnerSpeed;
