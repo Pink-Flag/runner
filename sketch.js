@@ -1,11 +1,13 @@
-// short or long jump
 // scoreboard
 //bin knocked over animation
-// clouds
+
 // low pass on audio as water rises?
-// fox running through water splash
-// sun animation
+
 // shooting stars
+// curve sun and moon trajectory
+// colour of mountains at night
+// ai rucksack top corner
+// sounds
 
 var circlePosition;
 var runner;
@@ -62,6 +64,7 @@ var bin;
 var planetBool = false;
 var coinGroup;
 var add;
+var planetTimeout;
 var currentCoinCount;
 var bgLoop;
 var sun;
@@ -90,9 +93,14 @@ var currentPlatformLocation = 0;
 var index;
 var random;
 var distance = [200, 500, 800, 1100, 1500];
+var r = 0;
+var g = 235;
+var b = 255;
 
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
+
+setInterval(() => {}, 16);
 
 // Preload  the animations
 function preload() {
@@ -256,7 +264,7 @@ function draw() {
     }
   } else {
     if (!gameOver) {
-      background(0, 235, 255);
+      background(r, g, b);
       runner.depth = 4;
       runner.velocity.y += gravity;
       runner.velocity.x = runnerSpeed;
@@ -297,6 +305,7 @@ function draw() {
           tile.velocity.x = 0;
         });
       }
+
       removeOldBins();
       addCloudToGroup();
       removeOldClouds();
@@ -306,16 +315,18 @@ function draw() {
       addWaterToGroup();
       removeWaterFromGroup();
       waterIncrease();
+      dayCycle();
       movePlanet();
       fallCheck();
       drownedCheck();
       drawSprites();
       runner.overlap(waterGroup, wetGround);
+      runner.overlap(binGroup, wetGround);
       updateDrops();
       drawDrops();
       updateScore();
-      cloudGroup.collide(platformsGroup);
-
+      console.log(g, "g<<<<");
+      console.log(b, "<<<<b");
       // updateLives();
       updateCoins();
       binGroup.collide(platformsGroup);
@@ -350,17 +361,32 @@ function coinBin(bin, coin) {
 //***********CLOUDS************
 
 function addCloudToGroup() {
-  if (cloudGroup.length < 6) {
-    let cloudNum = Math.floor(random(1, 5));
-
+  if (cloudGroup.length < 4) {
     let newCloud = createSprite(
       currentPlatformLocation - cloudIndex(),
       150,
       10,
       10
     );
-    console.log(cloudGroup);
-    newCloud.addAnimation("cloud", `cloud${cloudNum}`);
+    switch (Math.floor(random(1, 5))) {
+      case 1:
+        newCloud.addImage(cloud1);
+        break;
+      case 2:
+        newCloud.addImage(cloud2);
+        break;
+      case 3:
+        newCloud.addImage(cloud3);
+        break;
+      case 4:
+        newCloud.addImage(cloud4);
+        break;
+      case 5:
+        newCloud.addImage(cloud5);
+        break;
+    }
+
+    // newCloud.addAnimation("cloud", `cloud${cloudNum}`);
     newCloud.position.y = random(50, 200);
     newCloud.depth = random(0, 4);
     newCloud.setCollider("rectangle", 0, 0, 10, 41);
@@ -370,7 +396,7 @@ function addCloudToGroup() {
 }
 function removeOldClouds() {
   for (let i = 0; i < cloudGroup.length; i++) {
-    if (cloudGroup[i].position.x < runner.position.x - 3000) {
+    if (cloudGroup[i].position.x < runner.position.x - 1000) {
       cloudGroup[i].remove();
     }
   }
@@ -391,14 +417,14 @@ function setupSun() {
 
 function movePlanet() {
   if (playerScore > 10) {
-    if (movement === 400) {
+    if (movement > 400) {
       inc = -1;
-      planetBool = false;
-    } else if (movement === 75 && planetBool === true) {
-      inc = 1;
-    } else if (movement === 75 && planetBool === false) {
-      inc = 0;
-      planetWait();
+      clearTimeout(planetTimeout);
+    } else if (movement < 75 && planetBool === false) {
+      inc = 0.001;
+      setTimeout(() => {
+        inc = 1;
+      }, 10000);
     }
     movement += inc;
   }
@@ -416,12 +442,12 @@ function movePlanet() {
   }
 }
 
-function planetWait() {
-  setTimeout(planetBoolFlip, 10000);
-}
-
-function planetBoolFlip() {
-  planetBool = true;
+function dayCycle() {
+  if (checkPlanet === "sun") {
+    console.log("daycycle");
+    g = 310 - movement;
+    b = 330 - movement / 1.3;
+  }
 }
 
 //********RAIN*****************
@@ -641,12 +667,7 @@ function addNewBackgroundTiles() {
         height
       );
     } else {
-      bgLoop = createSprite(
-        currentBackgroundTilePosition,
-        200 / 2,
-        width,
-        height
-      );
+      bgLoop = createSprite(currentBackgroundTilePosition, 90, width, height);
     }
     bgLoop.addAnimation("bg", gameBackground);
     bgLoop.depth = 1;
@@ -775,6 +796,7 @@ function addWaterToGroup() {
       width,
       height
     );
+
     waterLoop.addAnimation("water", water);
     waterLoop.collide(runner);
     waterLoop.depth = 4;
@@ -1175,6 +1197,9 @@ function newGame() {
   drowned = false;
   waterAxisX = 0;
   waterAxisY = 0;
+  checkPlanet = "sun";
+  g = 235;
+  b = 255;
   drop = [];
   setupDrops();
   planet.changeAnimation("sun");
@@ -1184,6 +1209,7 @@ function newGame() {
   backgroundTiles.removeSprites();
   coinGroup.removeSprites();
   waterGroup.removeSprites();
+  cloudGroup.removeSprites();
   waterHeight = 500;
   foxWaterHeight = 0;
   playerLives = 3;
