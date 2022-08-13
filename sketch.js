@@ -64,7 +64,7 @@ var bin;
 var planetBool = false;
 var coinGroup;
 var add;
-var planetTimeout;
+
 var currentCoinCount;
 var bgLoop;
 var sun;
@@ -99,8 +99,6 @@ var b = 255;
 
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
-
-setInterval(() => {}, 16);
 
 // Preload  the animations
 function preload() {
@@ -190,6 +188,17 @@ function preload() {
     "./Images/explosion/tile031.png"
   );
 
+  backgroundAnimation = loadAnimation(
+    "./Images/background/background1.png",
+    "./Images/background/background2.png",
+    "./Images/background/background3.png",
+    "./Images/background/background4.png",
+    "./Images/background/background5.png",
+    "./Images/background/background6.png",
+    "./Images/background/background7.png",
+    "./Images/background/background8.png"
+  );
+
   gameBackground = loadImage("./Images/background.png");
 
   platformBackground = loadImage(
@@ -235,7 +244,6 @@ function setup() {
   index = 0;
   setupDrops();
   runner = createSprite(50, 100, 25, 40);
-
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
   runner.addAnimation("run", runningAnimation);
@@ -252,6 +260,7 @@ function setup() {
   coinGroup = new Group();
   // throwCoinGroup = new Group();
   backgroundTiles = new Group();
+
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
 }
@@ -305,7 +314,7 @@ function draw() {
           tile.velocity.x = 0;
         });
       }
-
+      cycleBackground();
       removeOldBins();
       addCloudToGroup();
       removeOldClouds();
@@ -325,8 +334,7 @@ function draw() {
       updateDrops();
       drawDrops();
       updateScore();
-      console.log(g, "g<<<<");
-      console.log(b, "<<<<b");
+
       // updateLives();
       updateCoins();
       binGroup.collide(platformsGroup);
@@ -416,10 +424,9 @@ function setupSun() {
 }
 
 function movePlanet() {
-  if (playerScore > 10) {
+  if (playerScore > 0) {
     if (movement > 400) {
       inc = -1;
-      clearTimeout(planetTimeout);
     } else if (movement < 75 && planetBool === false) {
       inc = 0.001;
       setTimeout(() => {
@@ -432,10 +439,10 @@ function movePlanet() {
   planet.position.x = camera.position.x + 200;
   planet.position.y = movement;
 
-  if (planet.position.y > 350 && checkPlanet === "sun") {
+  if (planet.position.y > 399 && checkPlanet === "sun") {
     planet.changeAnimation("moon");
     checkPlanet = "moon";
-  } else if (planet.position.y > 350 && checkPlanet === "moon") {
+  } else if (planet.position.y > 399 && checkPlanet === "moon") {
     planet.changeAnimation("sun");
 
     checkPlanet = "sun";
@@ -444,7 +451,6 @@ function movePlanet() {
 
 function dayCycle() {
   if (checkPlanet === "sun") {
-    console.log("daycycle");
     g = 310 - movement;
     b = 330 - movement / 1.3;
   }
@@ -669,7 +675,16 @@ function addNewBackgroundTiles() {
     } else {
       bgLoop = createSprite(currentBackgroundTilePosition, 90, width, height);
     }
-    bgLoop.addAnimation("bg", gameBackground);
+
+    bgLoop.addAnimation("bgAnim", backgroundAnimation);
+    bgLoop.animation.stop();
+
+    if (checkPlanet === "moon") {
+      bgLoop.animation.goToFrame(7);
+    }
+    if (planet.position.y > 300) {
+      bgLoop.animation.goToFrame(7);
+    }
     bgLoop.depth = 1;
 
     bgLoop.velocity.x = runnerSpeed / 12;
@@ -683,6 +698,16 @@ function removeOldBackgroundTiles() {
     if (backgroundTiles[i].position.x < runner.position.x - width) {
       backgroundTiles[i].remove();
     }
+  }
+}
+
+function cycleBackground() {
+  let bgIndex = Math.floor(movement / 50);
+  console.log(checkPlanet, planet.position.y);
+  if (checkPlanet === "sun") {
+    backgroundTiles.forEach((tile) => {
+      tile.animation.goToFrame(bgIndex);
+    });
   }
 }
 
@@ -751,15 +776,6 @@ function hitBin(runner, bin) {
       coinCount = 0 + coinReset;
     }
   }, 50);
-
-  // let bendCoins = setInterval(() => {
-  //   throwCoinGroup.forEach((element) => {
-  //     element.position.y += 5;
-  //   });
-  //   if (throwCoinGroup.length === 0) {
-  //     clearInterval(bendCoins);
-  //   }
-  // }, 10);
 
   bin.remove();
 }
@@ -831,14 +847,6 @@ function waterIncrease() {
   }
 }
 
-// function waves() {
-// if count < 10 {
-//   count += 1;
-// } else if count > 0 {
-//   count -= 1;
-
-// }}
-
 //************************Coins ******************** */
 
 function coinIndex() {
@@ -862,32 +870,6 @@ function addCoinToGroup() {
     coinGroup.add(newCoin);
   }
 }
-
-// function addThrowCoinGroup() {
-//   let coinInterval = setInterval(() => {
-//     let newCoin = createSprite(
-//       camera.position.x + 350,
-//       camera.position.y - 135,
-//       10,
-//       10
-//     );
-//     newCoin.addAnimation("bottle", bottle);
-//     newCoin.addAnimation("sparkles", sparkleAnimation);
-
-//     newCoin.depth = 4;
-//     newCoin.setCollider("rectangle", 0, 0, 10, 41);
-//     newCoin.velocity.y = 2;
-//     newCoin.velocity.x = -20;
-//     throwCoinGroup.add(newCoin);
-
-//     if (throwCoinGroup.length >= currentCoinCount) {
-//       clearInterval(coinInterval);
-//       setTimeout(() => {
-//         throwCoinGroup.removeSprites();
-//       }, 5000);
-//     }
-//   }, 10);
-// }
 
 function collectCoin(runner, coin) {
   if (coinCount < 25) {
@@ -965,17 +947,6 @@ function randomIndex() {
 }
 
 function solidGround() {
-  // if (camera.position.y > 195) {
-  //   let moveCamera = setInterval(() => {
-  //     camera.position.y++;
-
-  //     if (camera.position.y > 195) {
-  //       clearInterval(moveCamera);
-
-  //     }
-  //   }, 1);
-  // }
-
   runner.velocity.y = 0;
   if (runner.position.y < 300) {
     runner.changeAnimation("run");
@@ -1237,21 +1208,3 @@ function newGame() {
     gameMusic.play();
   }
 }
-
-// runner.changeAnimation("flash");
-// isFlashing = true;
-
-// runnerSpeed *= 0.5;
-// setTimeout(function () {
-//   isFlashing = false;
-//   setInterval(() => {
-//     (runnerSpeed / 50) * 100;
-//   }, 100);
-
-//   runnerSpeed = (runnerSpeed / 50) * 100;
-// }, 1000);
-// playerLives--;
-
-// if (playerLives === -1) {
-//   gameOver = true;
-// }
