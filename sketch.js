@@ -1,7 +1,5 @@
 // scoreboard
 // low pass on audio as water rises?
-// curve sun and moon trajectory
-// sounds bin
 
 // mute for mobile
 
@@ -91,6 +89,7 @@ var distance = [200, 500, 800, 1100, 1500];
 var r = 0;
 var g = 235;
 var b = 255;
+var filter;
 
 const deviceType = () => {
   const ua = navigator.userAgent;
@@ -330,7 +329,7 @@ function setup() {
   coinGroup = new Group();
   // throwCoinGroup = new Group();
   backgroundTiles = new Group();
-
+  filter = new p5.BandPass();
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
 }
@@ -394,6 +393,7 @@ function draw() {
       addBinToGroup();
       addCoinToGroup();
       removeCoins();
+      // waterFilter();
       addWaterToGroup();
       cycleBins();
       removeWaterFromGroup();
@@ -1229,6 +1229,13 @@ function jumpDetection() {
 }
 
 // *****************Single functionallity function **********
+function waterFilter() {
+  let freq = map(waterHeight, 0, width, 20, 10000);
+  freq = constrain(freq, 0, 22050);
+  filter.freq(freq);
+  gameMusic.connect(filter);
+}
+
 function muteGame() {
   musicOn = !musicOn;
   if (musicOn) {
