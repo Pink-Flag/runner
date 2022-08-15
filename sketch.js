@@ -1,8 +1,9 @@
 // scoreboard
 // low pass on audio as water rises?
 // curve sun and moon trajectory
-// sounds
-// add light effect to clouds and platforms and fox?
+// sounds bin
+
+// mute for mobile
 
 var circlePosition;
 var runner;
@@ -27,6 +28,7 @@ let jumpDiff = 0;
 var inc = 1;
 var gravity = 1;
 var jumpPower = 17;
+var touched = false;
 var runnerSpeed = 10;
 var isFlashing = false;
 var currentBackgroundTilePosition;
@@ -39,12 +41,14 @@ var currentWaterHeight;
 var sparkleSpriteSheet;
 var planet;
 var sparkleAnimation;
+var doubleJumpPrevention = false;
 var water;
 var cloud1;
 var cloud2;
 var cloud3;
 var cloud4;
 var cloud5;
+var touchNew = false;
 var foxWaterHeight = 0;
 // var throwCoinGroup;
 var currentWaterTilePosition;
@@ -80,12 +84,6 @@ var waterAxisY;
 var hasDrowned = false;
 var coinTime = false;
 var firstTimeLoad = true;
-var platform1132,
-  platform1587,
-  platform327,
-  platform537,
-  platform747,
-  transparentBin;
 var currentPlatformLocation = 0;
 var index;
 var random;
@@ -93,6 +91,25 @@ var distance = [200, 500, 800, 1100, 1500];
 var r = 0;
 var g = 235;
 var b = 255;
+
+const deviceType = () => {
+  const ua = navigator.userAgent;
+  if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+    return "tablet";
+  } else if (
+    /Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(
+      ua
+    )
+  ) {
+    return "mobile";
+  }
+  return "desktop";
+};
+
+var device = deviceType();
+if (device === "mobile") {
+  screen.orientation.lock("landscape");
+}
 
 // Preload  the animations
 function preload() {
@@ -248,7 +265,7 @@ function preload() {
     "./Images/bin/transparentBin_1.png",
     "./Images/bin/transparentBin_2.png",
     "./Images/bin/transparentBin_3.png",
-    "./Images/bin/transparentBin_4.png",
+    "./Images/bin/transparentBin_4.png"
   );
 
   gameBackground = loadImage("./Images/background.png");
@@ -269,12 +286,6 @@ function preload() {
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
 
-  platform327 = loadImage("./Images/platform327.png");
-  platform537 = loadImage("./Images/platform537.png");
-  platform747 = loadImage("./Images/platform747.png");
-  platform1132 = loadImage("./Images/platform1132.png");
-  platform1587 = loadImage("./Images/platform1587.png");
-  transparentBin = loadImage("./Images/transparentBin.png");
   heart = loadImage("./Images/heart.png");
   solar = loadImage("./Images/solar.png");
   bottle = loadImage("./Images/smallBottle.png");
@@ -293,7 +304,7 @@ function preload() {
 function setup() {
   createCanvas(width, height);
   switchBool = true;
-  gameMusic.play();
+
   index = 0;
   setupDrops();
   setupStars();
@@ -323,7 +334,9 @@ function setup() {
 function draw() {
   if (firstTimeLoad) {
     controlls();
-    if (keyWentDown("space")) {
+
+    if (keyWentDown("space") || touchNew) {
+      gameMusic.play();
       firstTimeLoad = false;
     }
   } else {
@@ -339,7 +352,7 @@ function draw() {
       runner.overlap(platformsGroup, hitPlatform);
       runner.overlap(coinGroup, collectCoin);
       addNewPlatforms();
-      jumpDetection();
+      keyPress();
 
       if (!hasFallen) {
         camera.position.x = runner.position.x + 300;
@@ -387,6 +400,7 @@ function draw() {
       fallCheck();
       drownedCheck();
       drawStars();
+
       if (checkPlanet === "moon") {
         updateStars();
       }
@@ -405,7 +419,7 @@ function draw() {
     if (checkGameOverText) {
       bigGameOverText();
 
-      if (keyWentDown("space")) {
+      if (keyWentDown("space") || touchNew) {
         newGame();
       }
     }
@@ -430,6 +444,7 @@ function coinBin(bin, coin) {
 //***********CLOUDS************
 
 function addCloudToGroup() {
+  touchNew = false;
   if (cloudGroup.length < 4) {
     let newCloud = createSprite(
       currentPlatformLocation - cloudIndex(),
@@ -841,16 +856,16 @@ function addBinToGroup() {
       10
     );
 
-   newBin.addAnimation("darkBin", binCycleAnimation);
+    newBin.addAnimation("darkBin", binCycleAnimation);
     newBin.animation.stop();
 
     if (checkPlanet === "moon") {
-     newBin.animation.goToFrame(7);
+      newBin.animation.goToFrame(7);
     }
     if (planet.position.y > 300) {
       newBin.animation.goToFrame(7);
     }
-    
+
     newBin.depth = 4;
     newBin.setCollider("rectangle", 0, 0, 10, 41);
     newBin.velocity.y += gravity + 5;
@@ -981,7 +996,7 @@ function drownedCheck() {
         gameMusic.stop();
 
         if (musicOn) {
-          gameOverMusic.play();
+          // gameOverMusic.play();
         }
       }
     }, 1000);
@@ -1133,6 +1148,7 @@ function randomIndex() {
 }
 
 function solidGround() {
+  doubleJumpPrevention = false;
   runner.velocity.y = 0;
   if (runner.position.y < 300) {
     runner.changeAnimation("run");
@@ -1168,21 +1184,39 @@ function wetGround(runner, water) {
   }
 }
 
-function jumpDetection() {
+function touchStarted() {
+  touchNew = true;
+  if (
+    (runner.velocity.y === 0 || runner.velocity.y === 1) &&
+    !drowned &&
+    frameCount > 50
+  ) {
+    jumpDetection();
+  }
+}
+
+function keyPress() {
   if (
     keyWentDown(UP_ARROW) &&
     (runner.velocity.y === 0 || runner.velocity.y === 1) &&
     !drowned
   ) {
-    if (!isFlashing) {
-      runner.changeAnimation("jump");
-    }
-    runner.animation.rewind();
+    jumpDetection();
+    doubleJumpPrevention = true;
+  }
+}
 
+function jumpDetection() {
+  console.log(doubleJumpPrevention);
+  if (!isFlashing) {
+    runner.changeAnimation("jump");
+  }
+  runner.animation.rewind();
+  if (doubleJumpPrevention === false) {
     runner.velocity.y = -jumpPower;
-    if (musicOn) {
-      jumpSound.play();
-    }
+  }
+  if (musicOn) {
+    jumpSound.play();
   }
 }
 
@@ -1233,23 +1267,36 @@ function controlls() {
     camera.position.y - 40
   );
   textSize(14);
-
-  text(
-    "Use the UP ARROW key to jump over ",
-    camera.position.x,
-    camera.position.y + 30
-  );
-  text(
-    "the gaps between the platforms",
-    camera.position.x,
-    camera.position.y + 60
-  );
-  text(
-    "Press Space to start the game",
-    camera.position.x,
-    camera.position.y + 120
-  );
-  text("Press M to mute", camera.position.x, camera.position.y + 150);
+  if (device === "desktop") {
+    text(
+      "Use the UP ARROW key to jump over ",
+      camera.position.x,
+      camera.position.y + 30
+    );
+    text(
+      "the gaps between the platforms",
+      camera.position.x,
+      camera.position.y + 60
+    );
+    text(
+      "Press Space to start the game",
+      camera.position.x,
+      camera.position.y + 120
+    );
+    text("Press M to mute", camera.position.x, camera.position.y + 150);
+  } else {
+    text(
+      "Tap the screen to jump over ",
+      camera.position.x,
+      camera.position.y + 30
+    );
+    text(
+      "the gaps between the platforms",
+      camera.position.x,
+      camera.position.y + 60
+    );
+    text("Tap to start the game", camera.position.x, camera.position.y + 120);
+  }
 }
 
 function updateScore() {
@@ -1316,7 +1363,7 @@ function fallCheck() {
         gameMusic.stop();
 
         if (musicOn) {
-          gameOverMusic.play();
+          // gameOverMusic.play();
         }
       }
     }, 1000);
@@ -1347,7 +1394,19 @@ function gameOverText() {
   textFont(gameFont);
   strokeWeight(2);
   textSize(15);
-  text("Press space to try again", camera.position.x, camera.position.y + 100);
+  if (device === "desktop") {
+    text(
+      "Press space to try again",
+      camera.position.x,
+      camera.position.y + 100
+    );
+  } else {
+    text(
+      "Tap on screen to try again",
+      camera.position.x,
+      camera.position.y + 100
+    );
+  }
   textSize(20);
   text(
     "You scored " + playerScore + " points!",
@@ -1357,6 +1416,7 @@ function gameOverText() {
 }
 
 function newGame() {
+  doubleJumpPrevention = false;
   hasDrowned = false;
   drowned = false;
   waterAxisX = 0;
@@ -1396,7 +1456,7 @@ function newGame() {
   currentPlatformLocation = 0;
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
-  gameOverMusic.stop();
+  // gameOverMusic.stop();
   if (musicOn) {
     gameMusic.play();
   }
