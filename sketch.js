@@ -193,16 +193,16 @@ function preload() {
     "./Images/background/background8.png"
   );
 
-  //  platformAnimation = loadAnimation(
-  //     "./Images/background/background1.png",
-  //     "./Images/background/background2.png",
-  //     "./Images/background/background3.png",
-  //     "./Images/background/background4.png",
-  //     "./Images/background/background5.png",
-  //     "./Images/background/background6.png",
-  //     "./Images/background/background7.png",
-  //     "./Images/background/background8.png"
-  //   );
+  platform327Animation = loadAnimation(
+    "./Images/platforms/327/platform327_1.png",
+    "./Images/platforms/327/platform327_2.png",
+    "./Images/platforms/327/platform327_3.png",
+    "./Images/platforms/327/platform327_4.png",
+    "./Images/platforms/327/platform327_5.png",
+    "./Images/platforms/327/platform327_6.png",
+    "./Images/platforms/327/platform327_7.png",
+    "./Images/platforms/327/platform327_8.png"
+  );
 
   gameBackground = loadImage("./Images/background.png");
 
@@ -317,7 +317,7 @@ function draw() {
       removeOldPlatforms();
       addNewBackgroundTiles();
       removeOldBackgroundTiles();
-      // cyclePlatforms()
+      cyclePlatforms();
       if (checkGameOverText) {
         backgroundTiles.forEach((tile) => {
           tile.velocity.x = 0;
@@ -636,7 +636,7 @@ function addNewPlatforms() {
         currentPlatformLocation += currentPlatformLength;
 
         platform.addAnimation("default", platform327);
-
+        platform.addAnimation("night327", platform327Animation);
         break;
       }
       case 1: {
@@ -701,14 +701,14 @@ function addNewPlatforms() {
     }
 
     //  platform.addAnimation("platformAnim", platformAnimation);
-    //  platform.animation.stop();
+    platform.animation.stop();
 
-    //   if (checkPlanet === "moon") {
-    //    platform.animation.goToFrame(7);
-    //   }
-    //   if (planet.position.y > 300) {
-    //     platform.animation.goToFrame(7);
-    //   }
+    if (checkPlanet === "moon") {
+      platform.animation.goToFrame(7);
+    }
+    if (planet.position.y > 300) {
+      platform.animation.goToFrame(7);
+    }
 
     platform.collide(runner);
     platform.depth = 3;
@@ -724,14 +724,14 @@ function removeOldPlatforms() {
   }
 }
 
-// function cyclePlatforms() {
-//   let platformIndex = Math.floor(movement / 50);
-//   if (checkPlanet === "sun") {
-//    platformsGroup((platform) => {
-//       platform.animation.goToFrame(platformIndex);
-//     });
-//   }
-// }
+function cyclePlatforms() {
+  let platformIndex = Math.floor(movement / 50);
+  if (checkPlanet === "sun") {
+    platformsGroup.forEach((platform) => {
+      platform.animation.goToFrame(platformIndex);
+    });
+  }
+}
 
 //*************************Background ****************
 
