@@ -285,14 +285,14 @@ function preload() {
   jumpSound = loadSound(
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
-  binCollectSound = loadSound("./Sounds/binCollect.mp3");
-  deathSpiral = loadSound("./Sounds/deathSpiral.mp3");
+  binCollectSound = loadSound("./sounds/binCollect.mp3");
+  deathSpiral = loadSound("./sounds/deathSpiral.mp3");
 
   heart = loadImage("./Images/heart.png");
   solar = loadImage("./Images/solar.png");
   bottle = loadImage("./Images/smallBottle.png");
   water = loadAnimation("./Images/water.png");
-  coinSound = loadSound("./Images/coinSound.mp3");
+  coinSound = loadSound("./sounds/coinSound.mp3");
   sun = loadImage("./Images/sun.png");
   moon = loadImage("./Images/moon.png");
   cloud1 = loadImage("./Images/cloud1.png");
