@@ -203,6 +203,26 @@ function preload() {
     "./Images/platforms/327/platform327_7.png",
     "./Images/platforms/327/platform327_8.png"
   );
+  platform537Animation = loadAnimation(
+    "./Images/platforms/537/platform537_1.png",
+    "./Images/platforms/537/platform537_2.png",
+    "./Images/platforms/537/platform537_3.png",
+    "./Images/platforms/537/platform537_4.png",
+    "./Images/platforms/537/platform537_5.png",
+    "./Images/platforms/537/platform537_6.png",
+    "./Images/platforms/537/platform537_7.png",
+    "./Images/platforms/537/platform537_8.png"
+  );
+  platform747Animation = loadAnimation(
+    "./Images/platforms/747/platform747_1.png",
+    "./Images/platforms/747/platform747_2.png",
+    "./Images/platforms/747/platform747_3.png",
+    "./Images/platforms/747/platform747_4.png",
+    "./Images/platforms/747/platform747_5.png",
+    "./Images/platforms/747/platform747_6.png",
+    "./Images/platforms/747/platform747_7.png",
+    "./Images/platforms/747/platform747_8.png"
+  );
 
   gameBackground = loadImage("./Images/background.png");
 
@@ -635,7 +655,6 @@ function addNewPlatforms() {
         );
         currentPlatformLocation += currentPlatformLength;
 
-        platform.addAnimation("default", platform327);
         platform.addAnimation("night327", platform327Animation);
         break;
       }
@@ -645,13 +664,12 @@ function addNewPlatforms() {
           currentPlatformLocation + 200,
           random(350, 450),
           537,
-
           336
         );
 
         currentPlatformLocation += currentPlatformLength;
 
-        platform.addAnimation("default", platform537);
+        platform.addAnimation("night537", platform537Animation);
 
         break;
       }
@@ -666,7 +684,7 @@ function addNewPlatforms() {
 
         currentPlatformLocation += currentPlatformLength;
 
-        platform.addAnimation("default", platform747);
+        platform.addAnimation("night747", platform747Animation);
 
         break;
       }
