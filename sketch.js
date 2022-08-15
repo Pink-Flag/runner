@@ -244,6 +244,12 @@ function preload() {
     "./Images/platforms/1587/platform1587_7.png",
     "./Images/platforms/1587/platform1587_8.png"
   );
+  binCycleAnimation = loadAnimation(
+    "./Images/bin/transparentBin_1.png",
+    "./Images/bin/transparentBin_2.png",
+    "./Images/bin/transparentBin_3.png",
+    "./Images/bin/transparentBin_4.png",
+  );
 
   gameBackground = loadImage("./Images/background.png");
 
@@ -372,6 +378,7 @@ function draw() {
       addCoinToGroup();
       removeCoins();
       addWaterToGroup();
+      cycleBins();
       removeWaterFromGroup();
       waterIncrease();
       dayCycle();
@@ -834,7 +841,16 @@ function addBinToGroup() {
       10
     );
 
-    newBin.addAnimation("bin", transparentBin);
+   newBin.addAnimation("darkBin", binCycleAnimation);
+    newBin.animation.stop();
+
+    if (checkPlanet === "moon") {
+     newBin.animation.goToFrame(7);
+    }
+    if (planet.position.y > 300) {
+      newBin.animation.goToFrame(7);
+    }
+    
     newBin.depth = 4;
     newBin.setCollider("rectangle", 0, 0, 10, 41);
     newBin.velocity.y += gravity + 5;
@@ -846,6 +862,15 @@ function removeOldBins() {
     if (binGroup[i].position.x < runner.position.x - 3000) {
       binGroup[i].remove();
     }
+  }
+}
+function cycleBins() {
+  let binIndex = Math.floor(movement / 100);
+
+  if (checkPlanet === "sun") {
+    binGroup.forEach((bin) => {
+      bin.animation.goToFrame(binIndex);
+    });
   }
 }
 
