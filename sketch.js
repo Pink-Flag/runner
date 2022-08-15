@@ -193,16 +193,16 @@ function preload() {
     "./Images/background/background8.png"
   );
 
-//  platformAnimation = loadAnimation(
-//     "./Images/background/background1.png",
-//     "./Images/background/background2.png",
-//     "./Images/background/background3.png",
-//     "./Images/background/background4.png",
-//     "./Images/background/background5.png",
-//     "./Images/background/background6.png",
-//     "./Images/background/background7.png",
-//     "./Images/background/background8.png"
-//   );
+  //  platformAnimation = loadAnimation(
+  //     "./Images/background/background1.png",
+  //     "./Images/background/background2.png",
+  //     "./Images/background/background3.png",
+  //     "./Images/background/background4.png",
+  //     "./Images/background/background5.png",
+  //     "./Images/background/background6.png",
+  //     "./Images/background/background7.png",
+  //     "./Images/background/background8.png"
+  //   );
 
   gameBackground = loadImage("./Images/background.png");
 
