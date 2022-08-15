@@ -1,12 +1,6 @@
 // scoreboard
-//bin knocked over animation
-
 // low pass on audio as water rises?
-
-// shooting stars
 // curve sun and moon trajectory
-// colour of mountains at night
-// ai rucksack top corner
 // sounds
 // add light effect to clouds and platforms and fox?
 
@@ -29,6 +23,7 @@ var gameOver = false;
 var platformsGroup;
 var solar;
 var movement = 75;
+let jumpDiff = 0;
 var inc = 1;
 var gravity = 1;
 var jumpPower = 17;
@@ -62,10 +57,9 @@ var switchBool;
 var coinSound;
 var checkPlanet = "sun";
 var bin;
-var planetBool = false;
 var coinGroup;
 var add;
-
+let platformAnimation;
 var currentCoinCount;
 var bgLoop;
 var sun;
@@ -99,9 +93,6 @@ var distance = [200, 500, 800, 1100, 1500];
 var r = 0;
 var g = 235;
 var b = 255;
-
-const muteIcon = document.querySelector(".mute");
-muteIcon.addEventListener("click", muteGame);
 
 // Preload  the animations
 function preload() {
@@ -201,6 +192,17 @@ function preload() {
     "./Images/background/background7.png",
     "./Images/background/background8.png"
   );
+
+//  platformAnimation = loadAnimation(
+//     "./Images/background/background1.png",
+//     "./Images/background/background2.png",
+//     "./Images/background/background3.png",
+//     "./Images/background/background4.png",
+//     "./Images/background/background5.png",
+//     "./Images/background/background6.png",
+//     "./Images/background/background7.png",
+//     "./Images/background/background8.png"
+//   );
 
   gameBackground = loadImage("./Images/background.png");
 
@@ -303,8 +305,7 @@ function draw() {
       }
 
       if (runner.position.y < 120) {
-        let jumpDiff = (runner.position.y - 120) / 2;
-
+        jumpDiff = (runner.position.y - 120) / 2;
         camera.position.y = jumpDiff + 195;
       }
 
@@ -316,6 +317,7 @@ function draw() {
       removeOldPlatforms();
       addNewBackgroundTiles();
       removeOldBackgroundTiles();
+      // cyclePlatforms()
       if (checkGameOverText) {
         backgroundTiles.forEach((tile) => {
           tile.velocity.x = 0;
@@ -333,7 +335,7 @@ function draw() {
       waterIncrease();
       dayCycle();
       movePlanet();
-
+      muteOnKeyboard();
       fallCheck();
       drownedCheck();
       drawStars();
@@ -348,18 +350,15 @@ function draw() {
       updateDrops();
       drawDrops();
       updateScore();
-
       // updateLives();
       updateCoins();
       binGroup.collide(platformsGroup);
     }
-
     if (checkGameOverText) {
       bigGameOverText();
 
       if (keyWentDown("space")) {
         newGame();
-        // clearTimeout(gameOverTimeout);
       }
     }
     if (checkGameOverText && gameOver) {
@@ -408,8 +407,7 @@ function addCloudToGroup() {
         break;
     }
 
-    // newCloud.addAnimation("cloud", `cloud${cloudNum}`);
-    newCloud.position.y = random(50, 200);
+    newCloud.position.y = random(50, 150);
     newCloud.depth = random(0, 4);
     newCloud.setCollider("rectangle", 0, 0, 10, 41);
     newCloud.velocity.x += random(-1, 2);
@@ -441,7 +439,7 @@ function movePlanet() {
   if (playerScore > 10) {
     if (movement > 400) {
       inc = -1;
-    } else if (movement < 75 && planetBool === false) {
+    } else if (movement < 75) {
       inc = 0.001;
       setTimeout(() => {
         inc = 1;
@@ -449,8 +447,9 @@ function movePlanet() {
     }
     movement += inc;
   }
+  let axis = movement * 2;
+  planet.position.x = camera.position.x + 350 - axis;
 
-  planet.position.x = camera.position.x + 200;
   planet.position.y = movement;
 
   if (planet.position.y > 399 && checkPlanet === "sun") {
@@ -624,94 +623,96 @@ function Splash() {
 
 function addNewPlatforms() {
   if (platformsGroup.length < 5) {
+    let platform;
     switch (randomIndex()) {
       case 0: {
         let currentPlatformLength = random(560, 600);
-        let platform = createSprite(
+        platform = createSprite(
           currentPlatformLocation + 200,
           random(350, 450),
           327,
-
           336
         );
-        platform.collide(runner);
         currentPlatformLocation += currentPlatformLength;
 
         platform.addAnimation("default", platform327);
-        platform.depth = 3;
-        platformsGroup.add(platform);
 
         break;
       }
       case 1: {
         let currentPlatformLength = random(675, 725);
-        let platform = createSprite(
+        platform = createSprite(
           currentPlatformLocation + 200,
           random(350, 450),
           537,
 
           336
         );
-        platform.collide(runner);
+
         currentPlatformLocation += currentPlatformLength;
 
         platform.addAnimation("default", platform537);
-        platform.depth = 3;
-        platformsGroup.add(platform);
 
         break;
       }
       case 2: {
         let currentPlatformLength = random(850, 950);
-        let platform = createSprite(
+        platform = createSprite(
           currentPlatformLocation + 300,
           random(350, 450),
           747,
           336
         );
-        platform.collide(runner);
+
         currentPlatformLocation += currentPlatformLength;
 
         platform.addAnimation("default", platform747);
-        platform.depth = 3;
-        platformsGroup.add(platform);
 
         break;
       }
       case 3: {
         let currentPlatformLength = random(1232, 1282);
-        let platform = createSprite(
+        platform = createSprite(
           currentPlatformLocation + 500,
           random(350, 450),
           1132,
           336
         );
-        platform.collide(runner);
+
         currentPlatformLocation += currentPlatformLength;
         platform.addAnimation("default", platform1132);
-        platform.depth = 3;
-        platformsGroup.add(platform);
 
         break;
       }
       default: {
         let currentPlatformLength = 1800;
-        let platform = createSprite(
+        platform = createSprite(
           currentPlatformLocation + 800,
           random(350, 450),
           1587,
           336
         );
-        platform.collide(runner);
-        currentPlatformLocation += currentPlatformLength;
 
+        currentPlatformLocation += currentPlatformLength;
         platform.addAnimation("default", platform1587);
-        platform.depth = 3;
-        platformsGroup.add(platform);
 
         break;
       }
     }
+
+    //  platform.addAnimation("platformAnim", platformAnimation);
+    //  platform.animation.stop();
+
+    //   if (checkPlanet === "moon") {
+    //    platform.animation.goToFrame(7);
+    //   }
+    //   if (planet.position.y > 300) {
+    //     platform.animation.goToFrame(7);
+    //   }
+
+    platform.collide(runner);
+    platform.depth = 3;
+    platformsGroup.add(platform);
   }
 }
 
@@ -722,6 +723,15 @@ function removeOldPlatforms() {
     }
   }
 }
+
+// function cyclePlatforms() {
+//   let platformIndex = Math.floor(movement / 50);
+//   if (checkPlanet === "sun") {
+//    platformsGroup((platform) => {
+//       platform.animation.goToFrame(platformIndex);
+//     });
+//   }
+// }
 
 //*************************Background ****************
 
@@ -849,13 +859,13 @@ function hitBin(runner, bin) {
 // *******************BIN SPARKS********************
 
 function setupSparks() {
-  for (var i = 0; i < 1000; i++) {
+  for (var i = 0; i < 100; i++) {
     spark[i] = new Spark();
   }
 }
 
 function drawSparks() {
-  for (var i = 0; i < 1000; i++) {
+  for (var i = 0; i < 100; i++) {
     spark[i].show();
     spark[i].update();
   }
@@ -866,6 +876,14 @@ function updateSparks() {
   newSpark = new Spark();
   spark.push(newSpark);
 }
+
+// function removeSparks() {
+//   if (runner.position.x > spark[500].x) {
+//     for (let i = 0; i < 500; i++) {
+//       spark.shift();
+//     }
+//   }
+// }
 
 function Spark() {
   this.x = runner.position.x;
@@ -1116,6 +1134,12 @@ function muteGame() {
   }
 }
 
+function muteOnKeyboard() {
+  if (keyWentDown(77)) {
+    muteGame();
+  }
+}
+
 function isGameOver() {
   gameOver = !gameOver;
 }
@@ -1161,6 +1185,7 @@ function controlls() {
     camera.position.x,
     camera.position.y + 120
   );
+  text("Press M to mute", camera.position.x, camera.position.y + 150);
 }
 
 function updateScore() {
