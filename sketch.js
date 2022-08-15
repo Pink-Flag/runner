@@ -285,6 +285,8 @@ function preload() {
   jumpSound = loadSound(
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
+  binCollectSound = loadSound("./Sounds/binCollect.mp3");
+  deathSpiral = loadSound("./Sounds/deathSpiral.mp3");
 
   heart = loadImage("./Images/heart.png");
   solar = loadImage("./Images/solar.png");
@@ -304,7 +306,9 @@ function preload() {
 function setup() {
   createCanvas(width, height);
   switchBool = true;
-
+  if (device !== "desktop") {
+    document.querySelector("body").classList.add("orientation");
+  }
   index = 0;
   setupDrops();
   setupStars();
@@ -417,6 +421,7 @@ function draw() {
       binGroup.collide(platformsGroup);
     }
     if (checkGameOverText) {
+      gameMusic.stop();
       bigGameOverText();
 
       if (keyWentDown("space") || touchNew) {
@@ -898,6 +903,9 @@ function hitPlatform(runner, platform) {
 }
 
 function hitBin(runner, bin) {
+  if (musicOn) {
+    binCollectSound.play();
+  }
   currentWaterHeight = Math.floor(waterHeight);
   currentCoinCount = coinCount;
   coinReset = 0;
@@ -988,13 +996,13 @@ function drownedCheck() {
     waterHeight += 1;
     drowned = true;
     hasFallen = true;
+
     runner.depth = 0;
     checkGameOverText = true;
     gameOverTimeout = setTimeout(() => {
       if (!newGameBool) {
         gameOver = true;
-        gameMusic.stop();
-
+        console.log("gameover");
         if (musicOn) {
           // gameOverMusic.play();
         }
@@ -1339,6 +1347,9 @@ function fallCheck() {
     if (runner.position.y > 430) {
       if (!hasDrowned && runnerSpeed > 0) {
         runner.changeAnimation("splash");
+        if (musicOn) {
+          deathSpiral.play();
+        }
         runner.velocity.x = -10;
         runner.velocity.y = 0;
         runner.position.x = waterAxisX + 50;
@@ -1351,6 +1362,9 @@ function fallCheck() {
       // runner.velocity.y = 0;
       // runner.velocity.x = 0;
       runner.changeAnimation("splash");
+      if (musicOn) {
+        deathSpiral.play();
+      }
       hasDrowned = true;
     }
     drowned = true;
