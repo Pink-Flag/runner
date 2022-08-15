@@ -80,7 +80,12 @@ var waterAxisY;
 var hasDrowned = false;
 var coinTime = false;
 var firstTimeLoad = true;
-var transparentBin;
+var platform1132,
+  platform1587,
+  platform327,
+  platform537,
+  platform747,
+  transparentBin;
 var currentPlatformLocation = 0;
 var index;
 var random;
@@ -258,6 +263,11 @@ function preload() {
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
 
+  platform327 = loadImage("./Images/platform327.png");
+  platform537 = loadImage("./Images/platform537.png");
+  platform747 = loadImage("./Images/platform747.png");
+  platform1132 = loadImage("./Images/platform1132.png");
+  platform1587 = loadImage("./Images/platform1587.png");
   transparentBin = loadImage("./Images/transparentBin.png");
   heart = loadImage("./Images/heart.png");
   solar = loadImage("./Images/solar.png");
