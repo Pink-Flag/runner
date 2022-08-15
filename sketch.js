@@ -1,9 +1,14 @@
-// short or long jump
 // scoreboard
 //bin knocked over animation
 
 // low pass on audio as water rises?
-// fox running through water splash
+
+// shooting stars
+// curve sun and moon trajectory
+// colour of mountains at night
+// ai rucksack top corner
+// sounds
+// add light effect to clouds and platforms and fox?
 
 var circlePosition;
 var runner;
@@ -23,6 +28,8 @@ var coinCount = 0;
 var gameOver = false;
 var platformsGroup;
 var solar;
+var movement = 75;
+var inc = 1;
 var gravity = 1;
 var jumpPower = 17;
 var runnerSpeed = 10;
@@ -32,10 +39,17 @@ var backgroundTiles;
 var playerScore = 0;
 var playerLives = 3;
 var binGroup;
+var cloudGroup;
 var currentWaterHeight;
 var sparkleSpriteSheet;
+var planet;
 var sparkleAnimation;
 var water;
+var cloud1;
+var cloud2;
+var cloud3;
+var cloud4;
+var cloud5;
 var foxWaterHeight = 0;
 // var throwCoinGroup;
 var currentWaterTilePosition;
@@ -46,14 +60,21 @@ const width = 840;
 let musicOn = true;
 var switchBool;
 var coinSound;
+var checkPlanet = "sun";
 var bin;
+var planetBool = false;
 var coinGroup;
 var add;
+
 var currentCoinCount;
 var bgLoop;
+var sun;
+var sunGroup;
 var bottle;
 var drop = [];
+var star = [];
 var splash = [];
+var spark = [];
 var splashGroup;
 var checkGameOverText = false;
 var gameOverTimeout;
@@ -75,10 +96,13 @@ var currentPlatformLocation = 0;
 var index;
 var random;
 var distance = [200, 500, 800, 1100, 1500];
+var r = 0;
+var g = 235;
+var b = 255;
 
 const muteIcon = document.querySelector(".mute");
 muteIcon.addEventListener("click", muteGame);
-console.log("Here")
+
 // Preload  the animations
 function preload() {
   jumpingAnimation = loadAnimation(
@@ -167,6 +191,17 @@ function preload() {
     "./Images/explosion/tile031.png"
   );
 
+  backgroundAnimation = loadAnimation(
+    "./Images/background/background1.png",
+    "./Images/background/background2.png",
+    "./Images/background/background3.png",
+    "./Images/background/background4.png",
+    "./Images/background/background5.png",
+    "./Images/background/background6.png",
+    "./Images/background/background7.png",
+    "./Images/background/background8.png"
+  );
+
   gameBackground = loadImage("./Images/background.png");
 
   platformBackground = loadImage(
@@ -196,6 +231,14 @@ function preload() {
   bottle = loadImage("./Images/smallBottle.png");
   water = loadAnimation("./Images/water.png");
   coinSound = loadSound("./Images/coinSound.mp3");
+  sun = loadImage("./Images/sun.png");
+  moon = loadImage("./Images/moon.png");
+  cloud1 = loadImage("./Images/cloud1.png");
+  cloud2 = loadImage("./Images/cloud2.png");
+  cloud3 = loadImage("./Images/cloud3.png");
+  cloud4 = loadImage("./Images/cloud4.png");
+  cloud5 = loadImage("./Images/cloud5.png");
+  bottleBag = loadImage("./Images/bottleBag.png");
 }
 
 function setup() {
@@ -204,6 +247,7 @@ function setup() {
   gameMusic.play();
   index = 0;
   setupDrops();
+  setupStars();
   runner = createSprite(50, 100, 25, 40);
   runner.depth = 4;
   runner.addAnimation("jump", jumpingAnimation);
@@ -212,116 +256,218 @@ function setup() {
   runner.addAnimation("flash", flashingAnimation);
   runner.addAnimation("splash", splashAnimation);
   setupSplash();
-
+  cloudGroup = new Group();
   waterGroup = new Group();
+  setupSun();
+  setupSparks();
   platformsGroup = new Group();
-
+  sunGroup = new Group();
   binGroup = new Group();
   coinGroup = new Group();
   // throwCoinGroup = new Group();
   backgroundTiles = new Group();
+
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
 }
 
-
-function draw() {  
-  
-  if(firstTimeLoad){
-    controlls()
+function draw() {
+  if (firstTimeLoad) {
+    controlls();
     if (keyWentDown("space")) {
-     firstTimeLoad= false;
+      firstTimeLoad = false;
     }
- 
-  
-  }else{
-  if (!gameOver) {
-    background(300);
-    runner.depth = 4;
-    runner.velocity.y += gravity;
-    runner.velocity.x = runnerSpeed;
+  } else {
+    if (!gameOver) {
+      background(r, g, b);
+      runner.depth = 4;
+      runner.velocity.y += gravity;
+      runner.velocity.x = runnerSpeed;
 
-    runner.collide(platformsGroup, solidGround);
-    runner.overlap(binGroup, hitBin);
-    runner.overlap(platformsGroup, hitPlatform);
-    runner.overlap(coinGroup, collectCoin);
-    addNewPlatforms();
-    jumpDetection();
+      runner.collide(platformsGroup, solidGround);
 
-    if (!hasFallen) {
-      camera.position.x = runner.position.x + 300;
+      runner.overlap(binGroup, hitBin);
+      runner.overlap(platformsGroup, hitPlatform);
+      runner.overlap(coinGroup, collectCoin);
+      addNewPlatforms();
+      jumpDetection();
+
+      if (!hasFallen) {
+        camera.position.x = runner.position.x + 300;
+      }
+
+      if (coinTime) {
+        setTimeout(() => {
+          coinTime = false;
+        }, 55);
+      }
+
+      if (runner.position.y < 120) {
+        let jumpDiff = (runner.position.y - 120) / 2;
+
+        camera.position.y = jumpDiff + 195;
+      }
+
+      if (newGameBool) {
+        setTimeout(() => {
+          newGameBool = false;
+        }, 1000);
+      }
+      removeOldPlatforms();
+      addNewBackgroundTiles();
+      removeOldBackgroundTiles();
+      if (checkGameOverText) {
+        backgroundTiles.forEach((tile) => {
+          tile.velocity.x = 0;
+        });
+      }
+      cycleBackground();
+      removeOldBins();
+      addCloudToGroup();
+      removeOldClouds();
+      addBinToGroup();
+      addCoinToGroup();
+      removeCoins();
+      addWaterToGroup();
+      removeWaterFromGroup();
+      waterIncrease();
+      dayCycle();
+      movePlanet();
+
+      fallCheck();
+      drownedCheck();
+      drawStars();
+      if (checkPlanet === "moon") {
+        updateStars();
+      }
+      drawSprites();
+      runner.overlap(waterGroup, wetGround);
+      if (playerScore > 1) {
+        drawSparks();
+      }
+      updateDrops();
+      drawDrops();
+      updateScore();
+
+      // updateLives();
+      updateCoins();
+      binGroup.collide(platformsGroup);
     }
 
-    if (coinTime) {
-      setTimeout(() => {
-        coinTime = false;
-      }, 55);
-    }
-
-    if (runner.position.y < 120) {
-      let jumpDiff = (runner.position.y - 120) / 2;
-
-      camera.position.y = jumpDiff + 195;
-    }
-
-    if (newGameBool) {
-      setTimeout(() => {
-        newGameBool = false;
-      }, 1000);
-    }
-    removeOldPlatforms();
-    addNewBackgroundTiles();
-    removeOldBackgroundTiles();
     if (checkGameOverText) {
-      backgroundTiles.forEach((tile) => {
-        tile.velocity.x = 0;
-      });
+      bigGameOverText();
+
+      if (keyWentDown("space")) {
+        newGame();
+        // clearTimeout(gameOverTimeout);
+      }
     }
-
-    removeOldBins();
-    addBinToGroup();
-    addCoinToGroup();
-    removeCoins();
-    addWaterToGroup();
-    removeWaterFromGroup();
-    waterIncrease();
-    fallCheck();
-    drownedCheck();
-    drawSprites();
-    runner.overlap(waterGroup, wetGround);
-    updateDrops();
-    drawDrops();
-    updateScore();
-
-    // updateLives();
-    updateCoins();
-    binGroup.collide(platformsGroup);
-  }
-
-  if (checkGameOverText) {
-    bigGameOverText();
-
-    if (keyWentDown("space")) {
-      newGame();
-      // clearTimeout(gameOverTimeout);
+    if (checkGameOverText && gameOver) {
+      gameOverText();
+      bigGameOverText();
+      splashAnimation.frameDelay = 5000;
+      updateSprites(false);
+      if (keyWentDown("space")) {
+        newGame();
+      }
     }
+    addNewPlatforms();
   }
-  if (checkGameOverText && gameOver) {
-    gameOverText();
-    bigGameOverText();
-    splashAnimation.frameDelay = 5000;
-    updateSprites(false);
-    if (keyWentDown("space")) {
-      newGame();
-    }
-  }
-  addNewPlatforms();
-}
 }
 
 function coinBin(bin, coin) {
   coin.changeAnimation("sparkles");
   coin.remove();
+}
+
+//***********CLOUDS************
+
+function addCloudToGroup() {
+  if (cloudGroup.length < 4) {
+    let newCloud = createSprite(
+      currentPlatformLocation - cloudIndex(),
+      150,
+      10,
+      10
+    );
+    switch (Math.floor(random(1, 5))) {
+      case 1:
+        newCloud.addImage(cloud1);
+        break;
+      case 2:
+        newCloud.addImage(cloud2);
+        break;
+      case 3:
+        newCloud.addImage(cloud3);
+        break;
+      case 4:
+        newCloud.addImage(cloud4);
+        break;
+      case 5:
+        newCloud.addImage(cloud5);
+        break;
+    }
+
+    // newCloud.addAnimation("cloud", `cloud${cloudNum}`);
+    newCloud.position.y = random(50, 200);
+    newCloud.depth = random(0, 4);
+    newCloud.setCollider("rectangle", 0, 0, 10, 41);
+    newCloud.velocity.x += random(-1, 2);
+    cloudGroup.add(newCloud);
+  }
+}
+function removeOldClouds() {
+  for (let i = 0; i < cloudGroup.length; i++) {
+    if (cloudGroup[i].position.x < runner.position.x - 1000) {
+      cloudGroup[i].remove();
+    }
+  }
+}
+
+function cloudIndex() {
+  return Math.random() * 500;
+}
+
+//************SUN AND MOON****************
+
+function setupSun() {
+  planet = createSprite(width / 2, 50, 50, 50);
+  planet.addAnimation("sun", sun);
+  planet.addAnimation("moon", moon);
+  planet.depth = 1;
+}
+
+function movePlanet() {
+  if (playerScore > 10) {
+    if (movement > 400) {
+      inc = -1;
+    } else if (movement < 75 && planetBool === false) {
+      inc = 0.001;
+      setTimeout(() => {
+        inc = 1;
+      }, 10000);
+    }
+    movement += inc;
+  }
+
+  planet.position.x = camera.position.x + 200;
+  planet.position.y = movement;
+
+  if (planet.position.y > 399 && checkPlanet === "sun") {
+    planet.changeAnimation("moon");
+    checkPlanet = "moon";
+  } else if (planet.position.y > 399 && checkPlanet === "moon") {
+    planet.changeAnimation("sun");
+
+    checkPlanet = "sun";
+  }
+}
+
+function dayCycle() {
+  if (checkPlanet === "sun") {
+    g = 310 - movement;
+    b = 330 - movement / 1.3;
+  }
 }
 
 //********RAIN*****************
@@ -365,6 +511,56 @@ function Drop() {
     this.speed = random(5, 10);
     this.wind = random(5, 10);
     this.gravity = 1.05;
+    this.y = this.y + this.speed * this.gravity;
+    this.x = this.x - this.wind;
+
+    if (this.y > height) {
+      this.y = random(0, -height);
+      this.gravity = 0;
+    }
+  };
+}
+
+//***********STARS********************
+function setupStars() {
+  for (var i = 0; i < 10; i++) {
+    star[i] = new Star();
+  }
+}
+
+function drawStars() {
+  for (var i = 0; i < 10; i++) {
+    star[i].show();
+    star[i].update();
+  }
+}
+
+function updateStars() {
+  if (runner.position.x > star[5].x) {
+    star.shift();
+    newDrop = new Star();
+    star.push(newDrop);
+  }
+}
+
+function Star() {
+  if (star.length < 5) {
+    this.x = random(0, 100);
+    this.y = random(100, -height);
+  } else {
+    this.x = random(camera.position.x + 200, camera.position.x + 1000);
+    this.y = random(100, -height);
+  }
+
+  this.show = function () {
+    noStroke();
+    fill(255, 255, random(220, 255));
+    ellipse(this.x, this.y, random(1, 5), random(1, 5));
+  };
+  this.update = function () {
+    this.speed = random(0, 1);
+    this.wind = random(0, 5);
+    this.gravity = 0.5;
     this.y = this.y + this.speed * this.gravity;
     this.x = this.x - this.wind;
 
@@ -541,15 +737,19 @@ function addNewBackgroundTiles() {
         height
       );
     } else {
-      bgLoop = createSprite(
-        currentBackgroundTilePosition,
-        200 / 2,
-        width,
-        height
-      );
+      bgLoop = createSprite(currentBackgroundTilePosition, 90, width, height);
     }
-    bgLoop.addAnimation("bg", gameBackground);
-    bgLoop.depth = -1;
+
+    bgLoop.addAnimation("bgAnim", backgroundAnimation);
+    bgLoop.animation.stop();
+
+    if (checkPlanet === "moon") {
+      bgLoop.animation.goToFrame(7);
+    }
+    if (planet.position.y > 300) {
+      bgLoop.animation.goToFrame(7);
+    }
+    bgLoop.depth = 1;
 
     bgLoop.velocity.x = runnerSpeed / 12;
 
@@ -562,6 +762,16 @@ function removeOldBackgroundTiles() {
     if (backgroundTiles[i].position.x < runner.position.x - width) {
       backgroundTiles[i].remove();
     }
+  }
+}
+
+function cycleBackground() {
+  let bgIndex = Math.floor(movement / 50);
+
+  if (checkPlanet === "sun") {
+    backgroundTiles.forEach((tile) => {
+      tile.animation.goToFrame(bgIndex);
+    });
   }
 }
 
@@ -630,17 +840,48 @@ function hitBin(runner, bin) {
       coinCount = 0 + coinReset;
     }
   }, 50);
-
-  // let bendCoins = setInterval(() => {
-  //   throwCoinGroup.forEach((element) => {
-  //     element.position.y += 5;
-  //   });
-  //   if (throwCoinGroup.length === 0) {
-  //     clearInterval(bendCoins);
-  //   }
-  // }, 10);
-
+  for (let i = 0; i < 100; i++) {
+    updateSparks();
+  }
   bin.remove();
+}
+
+// *******************BIN SPARKS********************
+
+function setupSparks() {
+  for (var i = 0; i < 1000; i++) {
+    spark[i] = new Spark();
+  }
+}
+
+function drawSparks() {
+  for (var i = 0; i < 1000; i++) {
+    spark[i].show();
+    spark[i].update();
+  }
+}
+
+function updateSparks() {
+  spark.shift();
+  newSpark = new Spark();
+  spark.push(newSpark);
+}
+
+function Spark() {
+  this.x = runner.position.x;
+  this.y = runner.position.y + 20;
+
+  this.show = function () {
+    noStroke();
+
+    fill(238, random(100, 200), 62);
+
+    ellipse(this.x, this.y, random(1, 5), random(1, 5));
+  };
+  this.update = function () {
+    this.y = this.y - random(-6, 10);
+    this.x = this.x + random(1, 15);
+  };
 }
 
 //  *************************Water*****************
@@ -675,9 +916,10 @@ function addWaterToGroup() {
       width,
       height
     );
+
     waterLoop.addAnimation("water", water);
     waterLoop.collide(runner);
-    waterLoop.depth = 5;
+    waterLoop.depth = 4;
     // waterLoop.velocity.x = -1;
     waterGroup.add(waterLoop);
   }
@@ -709,14 +951,6 @@ function waterIncrease() {
   }
 }
 
-// function waves() {
-// if count < 10 {
-//   count += 1;
-// } else if count > 0 {
-//   count -= 1;
-
-// }}
-
 //************************Coins ******************** */
 
 function coinIndex() {
@@ -740,32 +974,6 @@ function addCoinToGroup() {
     coinGroup.add(newCoin);
   }
 }
-
-// function addThrowCoinGroup() {
-//   let coinInterval = setInterval(() => {
-//     let newCoin = createSprite(
-//       camera.position.x + 350,
-//       camera.position.y - 135,
-//       10,
-//       10
-//     );
-//     newCoin.addAnimation("bottle", bottle);
-//     newCoin.addAnimation("sparkles", sparkleAnimation);
-
-//     newCoin.depth = 4;
-//     newCoin.setCollider("rectangle", 0, 0, 10, 41);
-//     newCoin.velocity.y = 2;
-//     newCoin.velocity.x = -20;
-//     throwCoinGroup.add(newCoin);
-
-//     if (throwCoinGroup.length >= currentCoinCount) {
-//       clearInterval(coinInterval);
-//       setTimeout(() => {
-//         throwCoinGroup.removeSprites();
-//       }, 5000);
-//     }
-//   }, 10);
-// }
 
 function collectCoin(runner, coin) {
   if (coinCount < 25) {
@@ -818,7 +1026,7 @@ function updateCoins() {
   stroke("black");
   textSize(20);
   textAlign(CENTER);
-  image(bottle, camera.position.x + 300, camera.position.y - 160);
+  image(bottleBag, camera.position.x + 300, camera.position.y - 160);
   text(coinCount, camera.position.x + 360, camera.position.y - 125);
 }
 
@@ -843,17 +1051,6 @@ function randomIndex() {
 }
 
 function solidGround() {
-  // if (camera.position.y > 195) {
-  //   let moveCamera = setInterval(() => {
-  //     camera.position.y++;
-
-  //     if (camera.position.y > 195) {
-  //       clearInterval(moveCamera);
-
-  //     }
-  //   }, 1);
-  // }
-
   runner.velocity.y = 0;
   if (runner.position.y < 300) {
     runner.changeAnimation("run");
@@ -923,28 +1120,47 @@ function isGameOver() {
   gameOver = !gameOver;
 }
 
-function controlls (){
- 
+function controlls() {
   background(0, 0, 0, 10);
 
   fill("white");
   stroke("black");
   textAlign(CENTER);
   textFont(gameFont);
-  strokeWeight(2)
-  textSize(16)
-  text("Collect as many bottles as possible, and recycle ", camera.position.x, camera.position.y-100);
-  text("them by putting them in the bins in order to keep  ", camera.position.x, camera.position.y-70);
-  text("the sea level from rising !", camera.position.x, camera.position.y-40);
-  textSize(14);
-  
-  text("Use the UP ARROW key to jump over ", camera.position.x, camera.position.y+30);
-  text("the gaps between the platforms", camera.position.x, camera.position.y + 60);
+  strokeWeight(2);
+  textSize(16);
   text(
-    "Press Space to start the game" , camera.position.x, camera.position.y + 120
+    "Collect as many bottles as possible, and recycle ",
+    camera.position.x,
+    camera.position.y - 100
   );
-   
+  text(
+    "them by putting them in the bins in order to keep  ",
+    camera.position.x,
+    camera.position.y - 70
+  );
+  text(
+    "the sea level from rising !",
+    camera.position.x,
+    camera.position.y - 40
+  );
+  textSize(14);
 
+  text(
+    "Use the UP ARROW key to jump over ",
+    camera.position.x,
+    camera.position.y + 30
+  );
+  text(
+    "the gaps between the platforms",
+    camera.position.x,
+    camera.position.y + 60
+  );
+  text(
+    "Press Space to start the game",
+    camera.position.x,
+    camera.position.y + 120
+  );
 }
 
 function updateScore() {
@@ -996,12 +1212,14 @@ function fallCheck() {
     }
     if (!hasDrowned) {
       runner.position.y -= 50;
+      // runner.velocity.y = 0;
+      // runner.velocity.x = 0;
       runner.changeAnimation("splash");
       hasDrowned = true;
     }
     drowned = true;
     hasFallen = true;
-    runner.depth = 0;
+    runner.depth = 3;
     checkGameOverText = true;
     gameOverTimeout = setTimeout(() => {
       if (!newGameBool) {
@@ -1054,14 +1272,19 @@ function newGame() {
   drowned = false;
   waterAxisX = 0;
   waterAxisY = 0;
+  checkPlanet = "sun";
+  g = 235;
+  b = 255;
   drop = [];
   setupDrops();
-
+  planet.changeAnimation("sun");
+  movement = 75;
   runner.changeAnimation("run");
   platformsGroup.removeSprites();
   backgroundTiles.removeSprites();
   coinGroup.removeSprites();
   waterGroup.removeSprites();
+  cloudGroup.removeSprites();
   waterHeight = 500;
   foxWaterHeight = 0;
   playerLives = 3;
@@ -1089,22 +1312,3 @@ function newGame() {
     gameMusic.play();
   }
 }
-
-
-// runner.changeAnimation("flash");
-// isFlashing = true;
-
-// runnerSpeed *= 0.5;
-// setTimeout(function () {
-//   isFlashing = false;
-//   setInterval(() => {
-//     (runnerSpeed / 50) * 100;
-//   }, 100);
-
-//   runnerSpeed = (runnerSpeed / 50) * 100;
-// }, 1000);
-// playerLives--;
-
-// if (playerLives === -1) {
-//   gameOver = true;
-// }
