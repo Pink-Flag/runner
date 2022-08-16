@@ -12,6 +12,8 @@ canvas {
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   overscroll-behavior: none;
+    touch-action: manipulation;
+
 }
 .loading-screen {
   background: black;
