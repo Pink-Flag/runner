@@ -2,6 +2,8 @@ body {
   background: #777;
   background: url("https://la-wit.github.io/build-an-infiniterunner/build/images/bg.png")
     repeat;
+  margin: 0;
+  padding: 0;
 }
 canvas {
   position: absolute;
@@ -32,7 +34,6 @@ canvas {
   -ms-flex-align: center;
   align-items: center;
   text-align: center;
-  
 }
 .loading-screen p {
   -webkit-animation: pulse 1s linear 2s infinite alternate;
@@ -55,7 +56,25 @@ canvas {
     opacity: 1;
   }
 }
-@media only screen and (orientation:portrait){
+
+.horisontal {
+  transform: rotate(0deg);
+}
+body {
+  background-color: #777;
+}
+@media (max-width: 400px) {
+  canvas {
+    left: 100%;
+  }
+  .horisontal {
+    transform: rotate(90deg);
+    top: 28%;
+    left: -43%;
+  }
+}
+
+@media only screen and (orientation: portrait) {
   .orientation {
     height: 100vw;
     transform: rotate(90deg);
