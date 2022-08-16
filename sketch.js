@@ -339,7 +339,7 @@ function draw() {
     controlls();
 
     if (keyWentDown("space") || touchNew) {
-      gameMusic.play();
+      // gameMusic.play();
       firstTimeLoad = false;
     }
   } else {
@@ -360,7 +360,7 @@ function draw() {
       if (!hasFallen) {
         camera.position.x = runner.position.x + 300;
       }
-
+      console.log(when);
       if (coinTime) {
         setTimeout(() => {
           coinTime = false;
@@ -1002,7 +1002,7 @@ function drownedCheck() {
     gameOverTimeout = setTimeout(() => {
       if (!newGameBool) {
         gameOver = true;
-        console.log("gameover");
+
         if (musicOn) {
           // gameOverMusic.play();
         }
@@ -1205,7 +1205,7 @@ function touchStarted() {
 
 function keyPress() {
   if (
-    keyWentDown(UP_ARROW) &&
+    (keyWentDown("space") || keyWentDown("UP_ARROW")) &&
     (runner.velocity.y === 0 || runner.velocity.y === 1) &&
     !drowned
   ) {
@@ -1215,7 +1215,6 @@ function keyPress() {
 }
 
 function jumpDetection() {
-  console.log(doubleJumpPrevention);
   if (!isFlashing) {
     runner.changeAnimation("jump");
   }
@@ -1479,6 +1478,92 @@ function newGame() {
   currentWaterTilePosition = -width;
   // gameOverMusic.stop();
   if (musicOn) {
-    gameMusic.play();
+    // gameMusic.play();
   }
 }
+
+// **********************MUSIC*********************
+
+// create a new Web Audio API context
+var ac = new AudioContext();
+
+var tempo = 120;
+var when = ac.currentTime;
+
+// notes
+
+var note1 = new TinyMusic.Note("E4 s");
+var note2 = new TinyMusic.Note("B4 s");
+var note3 = new TinyMusic.Note("Ab4 s");
+var note4 = new TinyMusic.Note("E2 q");
+var note5 = new TinyMusic.Note("B1 q");
+var note6 = new TinyMusic.Note("A1 q");
+var note7 = new TinyMusic.Note("E2 q");
+var rest = new TinyMusic.Note("- q");
+var restE = new TinyMusic.Note("- e");
+var E5 = new TinyMusic.Note("E5 s");
+var B5 = new TinyMusic.Note("B5 s");
+var A5 = new TinyMusic.Note("A5 s");
+var Ab5 = new TinyMusic.Note("Ab5 s");
+var E4 = new TinyMusic.Note("E4 s");
+var D4 = new TinyMusic.Note("D4 s");
+var B3 = new TinyMusic.Note("B3 w");
+var A3 = new TinyMusic.Note("A3 w");
+var Elong4 = new TinyMusic.Note("E4 w");
+var Dlong4 = new TinyMusic.Note("D4 w");
+
+// create sequences
+var trem1 = new TinyMusic.Sequence(ac, tempo);
+var trem2 = new TinyMusic.Sequence(ac, tempo);
+var trem3 = new TinyMusic.Sequence(ac, tempo);
+var introBass = new TinyMusic.Sequence(ac, tempo);
+var bassLine = new TinyMusic.Sequence(ac, tempo);
+var arp1 = new TinyMusic.Sequence(ac, tempo);
+var topline = new TinyMusic.Sequence(ac, tempo);
+
+// add notes to sequences
+trem1.push(note1);
+trem2.push(note2);
+trem3.push(note3);
+introBass.push(note4, rest, rest, restE, note5, note6, rest, rest, rest);
+bassLine.push(note4, rest, restE, note5, restE, note6, rest, rest, rest);
+arp1.push(E5, B5, A5, Ab5, E4, D4);
+topline.push(B3, Dlong4, A3, Elong4);
+
+// envelope/staccato
+trem1.staccato = 0.3;
+trem2.staccato = 0.3;
+trem3.staccato = 0.3;
+introBass.staccato = 0.05;
+
+// looping
+introBass.loop = false;
+
+//wave type
+trem1.waveType = "sawtooth";
+trem2.waveType = "sawtooth";
+trem3.waveType = "sawtooth";
+arp1.waveType = "sawtooth";
+
+// play
+trem1.play();
+
+trem2.play();
+trem3.play(when + (60 / tempo) * 64);
+bassLine.play(when + (60 / tempo) * 16);
+arp1.play(when + (60 / tempo) * 32);
+
+// gain/mixer
+trem1.gain.gain.value = 0.1;
+trem2.gain.gain.value = 0.1;
+trem3.gain.gain.value = 0.1;
+introBass.gain.gain.value = 0.1;
+bassLine.gain.gain.value = 0.1;
+arp1.gain.gain.value = 0.1;
+topline.gain.gain.value = 0.1;
+
+// eq
+
+trem1.bass.gain.value = -5;
+trem2.bass.gain.value = -5;
+trem3.bass.gain.value = -5;
