@@ -1,8 +1,7 @@
 // scoreboard
 // low pass on audio as water rises?
 
-// mute for mobile
-
+var mobileMute = false;
 var circlePosition;
 var runner;
 var coinReset;
@@ -90,6 +89,7 @@ var r = 0;
 var g = 235;
 var b = 255;
 var filter;
+var muteIcon;
 
 const deviceType = () => {
   const ua = navigator.userAgent;
@@ -300,6 +300,8 @@ function preload() {
   cloud4 = loadImage("./Images/cloud4.png");
   cloud5 = loadImage("./Images/cloud5.png");
   bottleBag = loadImage("./Images/bottleBag.png");
+  muteIcon = loadImage("./Images/muteIcon.png");
+  unmuteIcon = loadImage("./Images/unmuteIcon.png");
 }
 
 function setup() {
@@ -332,6 +334,7 @@ function setup() {
   filter = new p5.BandPass();
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
+  // touchStarted();
 }
 
 function draw() {
@@ -371,6 +374,7 @@ function draw() {
         jumpDiff = (runner.position.y - 120) / 2;
         camera.position.y = jumpDiff + 195;
       }
+      console.log(musicOn);
 
       if (newGameBool) {
         setTimeout(() => {
@@ -401,6 +405,7 @@ function draw() {
       dayCycle();
       movePlanet();
       muteOnKeyboard();
+
       fallCheck();
       drownedCheck();
       drawStars();
@@ -438,6 +443,7 @@ function draw() {
       }
     }
     addNewPlatforms();
+    displayMute();
   }
 }
 
@@ -1193,13 +1199,19 @@ function wetGround(runner, water) {
 }
 
 function touchStarted() {
-  touchNew = true;
-  if (
-    (runner.velocity.y === 0 || runner.velocity.y === 1) &&
-    !drowned &&
-    frameCount > 50
-  ) {
-    jumpDetection();
+  if (mouseX > 25 && mouseX < 60 && mouseY > 340 && mouseY < 380) {
+    muteGame();
+    mobileMute = !mobileMute;
+  } else {
+    touchNew = true;
+
+    if (
+      (runner.velocity.y === 0 || runner.velocity.y === 1) &&
+      !drowned &&
+      frameCount > 50
+    ) {
+      jumpDetection();
+    }
   }
 }
 
@@ -1215,7 +1227,6 @@ function keyPress() {
 }
 
 function jumpDetection() {
-  console.log(doubleJumpPrevention);
   if (!isFlashing) {
     runner.changeAnimation("jump");
   }
@@ -1338,6 +1349,15 @@ function updateLives() {
   textAlign(CENTER);
   image(heart, camera.position.x + 300, camera.position.y - 150);
   text(playerLives, camera.position.x + 360, camera.position.y - 125);
+}
+function displayMute() {
+  if (device !== "desktop" && !gameOver) {
+    if (!mobileMute) {
+      image(muteIcon, camera.position.x - 390, camera.position.y + 140);
+    } else {
+      image(unmuteIcon, camera.position.x - 390, camera.position.y + 140);
+    }
+  }
 }
 
 function increaseRunnerSpeed() {
@@ -1480,5 +1500,8 @@ function newGame() {
   // gameOverMusic.stop();
   if (musicOn) {
     gameMusic.play();
+  } else {
+    gameMusic.play();
+    gameMusic.setVolume(0);
   }
 }
