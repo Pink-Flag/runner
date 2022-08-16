@@ -2,7 +2,7 @@
 // low pass on audio as water rises?
 
 // mute for mobile
-
+var mobileMute = false;
 var circlePosition;
 var runner;
 var coinReset;
@@ -90,6 +90,7 @@ var r = 0;
 var g = 235;
 var b = 255;
 var filter;
+var muteIcon;
 
 const deviceType = () => {
   const ua = navigator.userAgent;
@@ -300,6 +301,7 @@ function preload() {
   cloud4 = loadImage("./Images/cloud4.png");
   cloud5 = loadImage("./Images/cloud5.png");
   bottleBag = loadImage("./Images/bottleBag.png");
+  muteIcon = loadImage("./Images/muteIcon.png");
 }
 
 function setup() {
@@ -332,114 +334,117 @@ function setup() {
   filter = new p5.BandPass();
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
+  // touchStarted();
 }
 
 function draw() {
-  if (firstTimeLoad) {
-    controlls();
+  // if (firstTimeLoad) {
+  //   // controlls();
+
+  //   if (keyWentDown("space") || touchNew) {
+  //     gameMusic.play();
+  //     firstTimeLoad = false;
+  //   }
+  // } else {
+  if (!gameOver) {
+    background(r, g, b);
+    runner.depth = 4;
+    runner.velocity.y += gravity;
+    runner.velocity.x = runnerSpeed;
+
+    runner.collide(platformsGroup, solidGround);
+
+    runner.overlap(binGroup, hitBin);
+    runner.overlap(platformsGroup, hitPlatform);
+    runner.overlap(coinGroup, collectCoin);
+    addNewPlatforms();
+    keyPress();
+
+    if (!hasFallen) {
+      camera.position.x = runner.position.x + 300;
+    }
+
+    if (coinTime) {
+      setTimeout(() => {
+        coinTime = false;
+      }, 55);
+    }
+
+    if (runner.position.y < 120) {
+      jumpDiff = (runner.position.y - 120) / 2;
+      camera.position.y = jumpDiff + 195;
+    }
+
+    if (newGameBool) {
+      setTimeout(() => {
+        newGameBool = false;
+      }, 1000);
+    }
+    removeOldPlatforms();
+    addNewBackgroundTiles();
+    removeOldBackgroundTiles();
+    cyclePlatforms();
+    if (checkGameOverText) {
+      backgroundTiles.forEach((tile) => {
+        tile.velocity.x = 0;
+      });
+    }
+    cycleBackground();
+    removeOldBins();
+    addCloudToGroup();
+    removeOldClouds();
+    addBinToGroup();
+    addCoinToGroup();
+    removeCoins();
+    // waterFilter();
+    addWaterToGroup();
+    cycleBins();
+    removeWaterFromGroup();
+    waterIncrease();
+    dayCycle();
+    movePlanet();
+    muteOnKeyboard();
+    muteOnPhone();
+    fallCheck();
+    drownedCheck();
+    drawStars();
+
+    if (checkPlanet === "moon") {
+      updateStars();
+    }
+    drawSprites();
+    runner.overlap(waterGroup, wetGround);
+    if (playerScore > 1) {
+      drawSparks();
+    }
+    updateDrops();
+    drawDrops();
+    updateScore();
+    // updateLives();
+    updateCoins();
+    binGroup.collide(platformsGroup);
+  }
+  if (checkGameOverText) {
+    gameMusic.stop();
+    bigGameOverText();
 
     if (keyWentDown("space") || touchNew) {
-      gameMusic.play();
-      firstTimeLoad = false;
+      newGame();
     }
-  } else {
-    if (!gameOver) {
-      background(r, g, b);
-      runner.depth = 4;
-      runner.velocity.y += gravity;
-      runner.velocity.x = runnerSpeed;
-
-      runner.collide(platformsGroup, solidGround);
-
-      runner.overlap(binGroup, hitBin);
-      runner.overlap(platformsGroup, hitPlatform);
-      runner.overlap(coinGroup, collectCoin);
-      addNewPlatforms();
-      keyPress();
-
-      if (!hasFallen) {
-        camera.position.x = runner.position.x + 300;
-      }
-
-      if (coinTime) {
-        setTimeout(() => {
-          coinTime = false;
-        }, 55);
-      }
-
-      if (runner.position.y < 120) {
-        jumpDiff = (runner.position.y - 120) / 2;
-        camera.position.y = jumpDiff + 195;
-      }
-
-      if (newGameBool) {
-        setTimeout(() => {
-          newGameBool = false;
-        }, 1000);
-      }
-      removeOldPlatforms();
-      addNewBackgroundTiles();
-      removeOldBackgroundTiles();
-      cyclePlatforms();
-      if (checkGameOverText) {
-        backgroundTiles.forEach((tile) => {
-          tile.velocity.x = 0;
-        });
-      }
-      cycleBackground();
-      removeOldBins();
-      addCloudToGroup();
-      removeOldClouds();
-      addBinToGroup();
-      addCoinToGroup();
-      removeCoins();
-      // waterFilter();
-      addWaterToGroup();
-      cycleBins();
-      removeWaterFromGroup();
-      waterIncrease();
-      dayCycle();
-      movePlanet();
-      muteOnKeyboard();
-      fallCheck();
-      drownedCheck();
-      drawStars();
-
-      if (checkPlanet === "moon") {
-        updateStars();
-      }
-      drawSprites();
-      runner.overlap(waterGroup, wetGround);
-      if (playerScore > 1) {
-        drawSparks();
-      }
-      updateDrops();
-      drawDrops();
-      updateScore();
-      // updateLives();
-      updateCoins();
-      binGroup.collide(platformsGroup);
-    }
-    if (checkGameOverText) {
-      gameMusic.stop();
-      bigGameOverText();
-
-      if (keyWentDown("space") || touchNew) {
-        newGame();
-      }
-    }
-    if (checkGameOverText && gameOver) {
-      gameOverText();
-      bigGameOverText();
-      splashAnimation.frameDelay = 5000;
-      updateSprites(false);
-      if (keyWentDown("space")) {
-        newGame();
-      }
-    }
-    addNewPlatforms();
   }
+  if (checkGameOverText && gameOver) {
+    gameOverText();
+    bigGameOverText();
+    splashAnimation.frameDelay = 5000;
+    updateSprites(false);
+    if (keyWentDown("space")) {
+      newGame();
+    }
+  }
+  addNewPlatforms();
+  displayMute();
 }
+// }
 
 function coinBin(bin, coin) {
   coin.changeAnimation("sparkles");
@@ -1193,7 +1198,12 @@ function wetGround(runner, water) {
 }
 
 function touchStarted() {
+  if (25 <= mouseX <= 45 && 350 <= mouseY <= 370) {
+    mobileMute = true;
+    console.log("here");
+  }
   touchNew = true;
+
   if (
     (runner.velocity.y === 0 || runner.velocity.y === 1) &&
     !drowned &&
@@ -1215,7 +1225,6 @@ function keyPress() {
 }
 
 function jumpDetection() {
-  console.log(doubleJumpPrevention);
   if (!isFlashing) {
     runner.changeAnimation("jump");
   }
@@ -1249,6 +1258,11 @@ function muteGame() {
 
 function muteOnKeyboard() {
   if (keyWentDown(77)) {
+    muteGame();
+  }
+}
+function muteOnPhone() {
+  if (mobileMute) {
     muteGame();
   }
 }
@@ -1338,6 +1352,9 @@ function updateLives() {
   textAlign(CENTER);
   image(heart, camera.position.x + 300, camera.position.y - 150);
   text(playerLives, camera.position.x + 360, camera.position.y - 125);
+}
+function displayMute() {
+  image(muteIcon, camera.position.x - 400, camera.position.y + 150);
 }
 
 function increaseRunnerSpeed() {

@@ -4,6 +4,7 @@ body {
     repeat;
   margin: 0;
   padding: 0;
+  background-color: black;
 }
 canvas {
   position: absolute;
@@ -12,8 +13,7 @@ canvas {
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   overscroll-behavior: none;
-    touch-action: manipulation;
-
+  touch-action: manipulation;
 }
 .loading-screen {
   background: black;
@@ -59,11 +59,7 @@ canvas {
   }
 }
 
-.horisontal {
-  transform: rotate(0deg);
-}
-
-@media (max-width: 700px) {
+@media (max-width: 500px) {
   canvas {
     left: 100%;
   }
@@ -72,11 +68,7 @@ canvas {
     top: 28%;
     left: -35%;
   }
-  body {
-    background-color: black;
-  }
 }
-
 @media only screen and (orientation: portrait) {
   .orientation {
     height: 100vw;
