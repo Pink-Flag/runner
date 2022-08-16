@@ -61,14 +61,17 @@ canvas {
   transform: rotate(0deg);
 }
 
-@media (max-width: 650px) {
+@media (max-width: 700px) {
   canvas {
     left: 100%;
   }
   .horisontal {
     transform: rotate(90deg);
     top: 28%;
-    left: -43%;
+    left: -35%;
+  }
+  body {
+    background-color: black;
   }
 }
 
