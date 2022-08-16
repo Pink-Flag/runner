@@ -61,7 +61,7 @@ canvas {
   transform: rotate(0deg);
 }
 
-@media (max-width: 500px) {
+@media (max-width: 650px) {
   canvas {
     left: 100%;
   }
