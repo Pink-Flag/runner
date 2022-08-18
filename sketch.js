@@ -1,6 +1,4 @@
-// scoreboard
-// low pass on audio as water rises?
-
+p5.disableFriendlyErrors = true;
 var mobileMute = false;
 var circlePosition;
 var runner;
@@ -13,7 +11,6 @@ var platformBackground;
 var splashAnimation;
 var gameFont;
 var gameMusic;
-var gameOverMusic;
 var hasFallen = false;
 var jumpSound;
 var coinCount = 0;
@@ -47,10 +44,8 @@ var cloud4;
 var cloud5;
 var touchNew = false;
 var foxWaterHeight = 0;
-// var throwCoinGroup;
 var currentWaterTilePosition;
 var waterHeight = 500;
-// var waterHeight = 400;
 const height = 390;
 const width = 840;
 let musicOn = true;
@@ -278,9 +273,7 @@ function preload() {
   gameMusic = loadSound(
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/generic-game-loop-4.mp3"
   );
-  gameOverMusic = loadSound(
-    "https://la-wit.github.io/build-an-infinite-runner/build/sounds/over.mp3"
-  );
+
   jumpSound = loadSound(
     "https://la-wit.github.io/build-an-infinite-runner/build/sounds/jump07.mp3"
   );
@@ -329,12 +322,10 @@ function setup() {
   sunGroup = new Group();
   binGroup = new Group();
   coinGroup = new Group();
-  // throwCoinGroup = new Group();
   backgroundTiles = new Group();
   filter = new p5.BandPass();
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
-  // touchStarted();
 }
 
 function draw() {
@@ -374,7 +365,6 @@ function draw() {
         jumpDiff = (runner.position.y - 120) / 2;
         camera.position.y = jumpDiff + 195;
       }
-      console.log(musicOn);
 
       if (newGameBool) {
         setTimeout(() => {
@@ -397,7 +387,6 @@ function draw() {
       addBinToGroup();
       addCoinToGroup();
       removeCoins();
-      // waterFilter();
       addWaterToGroup();
       cycleBins();
       removeWaterFromGroup();
@@ -421,7 +410,6 @@ function draw() {
       updateDrops();
       drawDrops();
       updateScore();
-      // updateLives();
       updateCoins();
       binGroup.collide(platformsGroup);
     }
@@ -682,11 +670,6 @@ function Splash() {
   this.update = function () {
     this.y = this.y - random(-6, 10);
     this.x = this.x + random(1, 10);
-
-    // if (this.y > height) {
-    //   this.y = random(0, 2);
-    //   this.gravity = 0;
-    // }
   };
 }
 
@@ -772,7 +755,6 @@ function addNewPlatforms() {
       }
     }
 
-    //  platform.addAnimation("platformAnim", platformAnimation);
     platform.animation.stop();
 
     if (checkPlanet === "moon") {
@@ -952,13 +934,13 @@ function hitBin(runner, bin) {
 // *******************BIN SPARKS********************
 
 function setupSparks() {
-  for (var i = 0; i < 100; i++) {
+  for (var i = 0; i < 40; i++) {
     spark[i] = new Spark();
   }
 }
 
 function drawSparks() {
-  for (var i = 0; i < 100; i++) {
+  for (var i = 0; i < 40; i++) {
     spark[i].show();
     spark[i].update();
   }
@@ -969,14 +951,6 @@ function updateSparks() {
   newSpark = new Spark();
   spark.push(newSpark);
 }
-
-// function removeSparks() {
-//   if (runner.position.x > spark[500].x) {
-//     for (let i = 0; i < 500; i++) {
-//       spark.shift();
-//     }
-//   }
-// }
 
 function Spark() {
   this.x = runner.position.x;
@@ -1009,9 +983,6 @@ function drownedCheck() {
       if (!newGameBool) {
         gameOver = true;
         console.log("gameover");
-        if (musicOn) {
-          // gameOverMusic.play();
-        }
       }
     }, 1000);
   }
@@ -1031,7 +1002,7 @@ function addWaterToGroup() {
     waterLoop.addAnimation("water", water);
     waterLoop.collide(runner);
     waterLoop.depth = 4;
-    // waterLoop.velocity.x = -1;
+
     waterGroup.add(waterLoop);
   }
 }
@@ -1048,14 +1019,12 @@ function waterIncrease() {
   if (runnerSpeed > 3) {
     waterGroup.forEach((element) => {
       element.position.y -= 0.03;
-      // element.position.y -= 0.5;
     });
     waterHeight -= 0.03;
     foxWaterHeight -= 0.03;
   } else {
     waterGroup.forEach((element) => {
       element.position.y -= 0.4;
-      // element.position.y -= 0.5;
     });
     waterHeight -= 0.4;
     foxWaterHeight -= 0.4;
@@ -1099,8 +1068,6 @@ function collectCoin(runner, coin) {
       coinCount += 1;
       coinTime = true;
     }
-  } else {
-    ///animation
   }
 }
 
@@ -1111,24 +1078,6 @@ function removeCoins() {
     }
   }
 }
-
-// function bagState() {
-//   if (coinCount === 0) {
-//     return coinCount + " empty";
-//   }
-//   if (coinCount < 6) {
-//     return coinCount + " 1/4";
-//   }
-//   if (coinCount < 11) {
-//     return coinCount + " 1/2";
-//   }
-//   if (coinCount < 16) {
-//     return coinCount + " 3/4";
-//   }
-//   if (coinCount < 21) {
-//     return "full";
-//   }
-// }
 
 function updateCoins() {
   fill("white");
@@ -1227,9 +1176,7 @@ function keyPress() {
 }
 
 function jumpDetection() {
-  if (!isFlashing) {
-    runner.changeAnimation("jump");
-  }
+  runner.changeAnimation("jump");
   runner.animation.rewind();
   if (doubleJumpPrevention === false) {
     runner.velocity.y = -jumpPower;
@@ -1240,6 +1187,8 @@ function jumpDetection() {
 }
 
 // *****************Single functionallity function **********
+// this function is still to be fully deplyed - it will add a low pass filter to the music that increases in severity as the water rises
+
 function waterFilter() {
   let freq = map(waterHeight, 0, width, 20, 10000);
   freq = constrain(freq, 0, 22050);
@@ -1253,7 +1202,7 @@ function muteGame() {
     gameMusic.setVolume(1);
   } else {
     gameMusic.setVolume(0);
-    gameOverMusic.setVolume(0);
+
     coinSound.setVolume(0);
   }
 }
@@ -1362,7 +1311,6 @@ function displayMute() {
 
 function increaseRunnerSpeed() {
   runnerSpeed += 0.1;
-  // waterHeight -= 1;
 }
 
 function fallCheck() {
@@ -1386,8 +1334,7 @@ function fallCheck() {
     }
     if (!hasDrowned) {
       runner.position.y -= 50;
-      // runner.velocity.y = 0;
-      // runner.velocity.x = 0;
+
       runner.changeAnimation("splash");
       if (musicOn) {
         deathSpiral.play();
@@ -1404,7 +1351,6 @@ function fallCheck() {
         gameMusic.stop();
 
         if (musicOn) {
-          // gameOverMusic.play();
         }
       }
     }, 1000);
@@ -1497,7 +1443,7 @@ function newGame() {
   currentPlatformLocation = 0;
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
-  // gameOverMusic.stop();
+
   if (musicOn) {
     gameMusic.play();
   } else {
