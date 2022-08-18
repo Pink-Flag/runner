@@ -1,6 +1,7 @@
 // scoreboard
 // low pass on audio as water rises?
-
+// less bins / faster water?
+// fix bins so not so close
 // mute for mobile
 
 var circlePosition;
@@ -1454,7 +1455,7 @@ function newGame() {
   coinGroup.removeSprites();
   waterGroup.removeSprites();
   cloudGroup.removeSprites();
-  waterHeight = 500;
+  waterHeight = 450;
   foxWaterHeight = 0;
   playerLives = 3;
   binGroup.removeSprites();
@@ -1545,13 +1546,18 @@ trem2.waveType = "sawtooth";
 trem3.waveType = "sawtooth";
 arp1.waveType = "sawtooth";
 
+setTimeout(() => {
+  playMusic();
+}, 1000);
 // play
-trem1.play();
+function playMusic() {
+  trem1.play();
 
-trem2.play();
-trem3.play(when + (60 / tempo) * 64);
-bassLine.play(when + (60 / tempo) * 16);
-arp1.play(when + (60 / tempo) * 32);
+  trem2.play();
+  trem3.play(when + (60 / tempo) * 64);
+  bassLine.play(when + (60 / tempo) * 16);
+  arp1.play(when + (60 / tempo) * 32);
+}
 
 // gain/mixer
 trem1.gain.gain.value = 0.1;
