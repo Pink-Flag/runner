@@ -1,5 +1,6 @@
 // scoreboard
 // low pass on audio as water rises?
+p5.disableFriendlyErrors = true;
 
 var mobileMute = false;
 var circlePosition;
@@ -14,49 +15,59 @@ var splashAnimation;
 var gameFont;
 var gameMusic;
 var gameOverMusic;
-var hasFallen = false;
 var jumpSound;
-var coinCount = 0;
-var gameOver = false;
 var platformsGroup;
 var solar;
-var movement = 75;
-let jumpDiff = 0;
-var inc = 1;
-var gravity = 1;
-var jumpPower = 17;
-var touched = false;
-var runnerSpeed = 10;
-var isFlashing = false;
-var currentBackgroundTilePosition;
+var coinCount;
+var hasFallen;
+var gameOver;
+var movement;
+let jumpDiff;
+var inc;
+var gravity;
+var jumpPower;
+var touched;
+var runnerSpeed;
+var isFlashing;
+var playerScore;
+var playerLives;
+var touchNew;
+var doubleJumpPrevention;
 var backgroundTiles;
-var playerScore = 0;
-var playerLives = 3;
+var currentBackgroundTilePosition;
 var binGroup;
 var cloudGroup;
 var currentWaterHeight;
 var sparkleSpriteSheet;
 var planet;
 var sparkleAnimation;
-var doubleJumpPrevention = false;
 var water;
 var cloud1;
 var cloud2;
 var cloud3;
 var cloud4;
 var cloud5;
-var touchNew = false;
-var foxWaterHeight = 0;
-// var throwCoinGroup;
 var currentWaterTilePosition;
-var waterHeight = 500;
-// var waterHeight = 400;
+
+var waterHeight;
+var foxWaterHeight;
 const height = 390;
 const width = 840;
-let musicOn = true;
+let musicOn;
+var checkPlanet;
+var checkGameOverText;
+var newGameBool;
+var drowned;
+var hasDrowned;
+var coinTime;
+var firstTimeLoad;
+var currentPlatformLocation;
+var distance;
+var r;
+var g;
+var b;
 var switchBool;
 var coinSound;
-var checkPlanet = "sun";
 var bin;
 var coinGroup;
 var add;
@@ -71,23 +82,12 @@ var star = [];
 var splash = [];
 var spark = [];
 var splashGroup;
-var checkGameOverText = false;
 var gameOverTimeout;
-var newGameBool = false;
 var currentPlatformHeight;
-var drowned = false;
 var waterAxisX;
 var waterAxisY;
-var hasDrowned = false;
-var coinTime = false;
-var firstTimeLoad = true;
-var currentPlatformLocation = 0;
 var index;
 var random;
-var distance = [200, 500, 800, 1100, 1500];
-var r = 0;
-var g = 235;
-var b = 255;
 var filter;
 var muteIcon;
 
@@ -305,6 +305,37 @@ function preload() {
 }
 
 function setup() {
+  waterHeight = 500;
+  foxWaterHeight = 0;
+
+  musicOn = true;
+  checkPlanet = "sun";
+  checkGameOverText = false;
+  newGameBool = false;
+  drowned = false;
+  hasDrowned = false;
+  coinTime = false;
+  firstTimeLoad = true;
+  currentPlatformLocation = 0;
+  distance = [200, 500, 800, 1100, 1500];
+  r = 0;
+  g = 235;
+  b = 255;
+  coinCount = 0;
+  hasFallen = false;
+  gameOver = false;
+  movement = 75;
+  jumpDiff = 0;
+  inc = 1;
+  gravity = 1;
+  jumpPower = 17;
+  touched = false;
+  runnerSpeed = 10;
+  isFlashing = false;
+  playerScore = 0;
+  playerLives = 3;
+  touchNew = false;
+  pixelDensity(1);
   createCanvas(width, height);
   switchBool = true;
   if (device !== "desktop") {
@@ -334,7 +365,7 @@ function setup() {
   filter = new p5.BandPass();
   currentBackgroundTilePosition = -width;
   currentWaterTilePosition = -width;
-  // touchStarted();
+  frameRate(60);
 }
 
 function draw() {
@@ -374,7 +405,6 @@ function draw() {
         jumpDiff = (runner.position.y - 120) / 2;
         camera.position.y = jumpDiff + 195;
       }
-      console.log(musicOn);
 
       if (newGameBool) {
         setTimeout(() => {
@@ -419,7 +449,7 @@ function draw() {
         drawSparks();
       }
       updateDrops();
-      drawDrops();
+      // drawDrops();
       updateScore();
       // updateLives();
       updateCoins();
@@ -445,6 +475,14 @@ function draw() {
     addNewPlatforms();
     displayMute();
   }
+  // let fps = frameRate();
+  // fill(255);
+  // stroke(2);
+  // text(
+  //   "FPS: " + fps.toFixed(2),
+  //   camera.position.x - 300,
+  //   camera.position.y - 150
+  // );
 }
 
 function coinBin(bin, coin) {
@@ -463,7 +501,7 @@ function addCloudToGroup() {
       10,
       10
     );
-    switch (Math.floor(random(1, 5))) {
+    switch (Math.floor(Math.floor(Math.random() * 5) + 1)) {
       case 1:
         newCloud.addImage(cloud1);
         break;
@@ -696,6 +734,7 @@ function Splash() {
 // currentPlatformLocation to increase/decrease distance START platforms
 
 function addNewPlatforms() {
+  // let start = millis();
   if (platformsGroup.length < 5) {
     let platform;
     switch (randomIndex()) {
@@ -716,7 +755,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(675, 725);
         platform = createSprite(
           currentPlatformLocation + 200,
-          random(350, 450),
+          Math.floor(Math.random() * 100) + 350,
           537,
           336
         );
@@ -731,7 +770,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(850, 950);
         platform = createSprite(
           currentPlatformLocation + 300,
-          random(350, 450),
+          Math.floor(Math.random() * 100) + 350,
           747,
           336
         );
@@ -746,7 +785,7 @@ function addNewPlatforms() {
         let currentPlatformLength = random(1232, 1282);
         platform = createSprite(
           currentPlatformLocation + 500,
-          random(350, 450),
+          Math.floor(Math.random() * 100) + 350,
           1132,
           336
         );
@@ -760,7 +799,7 @@ function addNewPlatforms() {
         let currentPlatformLength = 1800;
         platform = createSprite(
           currentPlatformLocation + 800,
-          random(350, 450),
+          Math.floor(Math.random() * 100) + 350,
           1587,
           336
         );
@@ -786,6 +825,9 @@ function addNewPlatforms() {
     platform.depth = 3;
     platformsGroup.add(platform);
   }
+  // let end = millis();
+  // let elapsed = end - start;
+  // console.log("This took: " + elapsed + "ms.");
 }
 
 function removeOldPlatforms() {
@@ -985,9 +1027,14 @@ function Spark() {
   this.show = function () {
     noStroke();
 
-    fill(238, random(100, 200), 62);
+    fill(Math.floor(Math.random() * 100) + 100);
 
-    ellipse(this.x, this.y, random(1, 5), random(1, 5));
+    ellipse(
+      this.x,
+      this.y,
+      Math.floor(Math.random() * 5) + 1,
+      Math.floor(Math.random() * 5) + 1
+    );
   };
   this.update = function () {
     this.y = this.y - random(-6, 10);
