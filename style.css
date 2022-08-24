@@ -13,8 +13,20 @@ canvas {
   overscroll-behavior: none;
   touch-action: manipulation;
 }
+
+.blink {
+  animation: blinker 0.3s step-start infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
 .loading-screen {
   background: black;
+  font-family: 'Press Start 2P';
   min-width: 840px;
   min-height: 390px;
   color: white;
