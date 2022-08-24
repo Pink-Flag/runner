@@ -43,8 +43,10 @@ canvas {
 .devs {
   color: white;
   position: absolute;
-  top: 72%;
-  left: 50%;
+  top: 68%;
+  left: 40%;
+  font-family: 'Press Start 2P';
+  font-size: 0.7rem;
 }
 
 @-webkit-keyframes pulse {
@@ -68,7 +70,7 @@ canvas {
   canvas {
     left: 100%;
   }
-  .horisontal {
+  .horizontal {
     transform: rotate(90deg);
     top: 28%;
     left: -35%;
